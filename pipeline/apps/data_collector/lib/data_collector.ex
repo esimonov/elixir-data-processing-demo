@@ -1,4 +1,5 @@
 defmodule DataCollector do
+  use GenServer
   @moduledoc """
   Documentation for `DataCollector`.
   """
@@ -12,7 +13,12 @@ defmodule DataCollector do
       :world
 
   """
-  def hello do
-    :world
+   def init(init_arg) do
+    {:ok, init_arg}
+  end
+
+  def start_link(_args) do
+    IO.puts("Data collector started")
+    {:ok, self()}
   end
 end
