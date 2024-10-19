@@ -1,4 +1,6 @@
 defmodule DataGenerator do
+  use Application
+
   @moduledoc """
   Documentation for `DataGenerator`.
   """
@@ -12,7 +14,8 @@ defmodule DataGenerator do
       :world
 
   """
-  def hello do
-    :world
+  def start(_type, _args) do
+    IO.puts("Data generator started")
+    {:ok, self()}
   end
 end

@@ -18,6 +18,7 @@ defmodule DataGenerator.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {DataGenerator, []},
       extra_applications: [:logger]
     ]
   end
