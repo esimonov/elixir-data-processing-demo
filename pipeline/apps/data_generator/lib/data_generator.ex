@@ -16,6 +16,10 @@ defmodule DataGenerator do
   """
   def start(_type, _args) do
     IO.puts("Data generator started")
+
+    Application.get_env(:data_generator, :greeting)
+    |> IO.puts()
+
     {:ok, self()}
   end
 end

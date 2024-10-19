@@ -9,6 +9,9 @@
 # move said applications out of the umbrella.
 import Config
 
+config :data_generator,
+  greeting: "HEY!!"
+
 # Sample configuration:
 #
 #     config :logger, :console,
