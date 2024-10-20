@@ -17,12 +17,15 @@ import Config
 #       metadata: [:user_id]
 #
 
+config :data_collector, :emqtt,
+  host: "127.0.0.1",
+  clientid: "collector",
+  port: 1883
+
 config :data_generator, :emqtt,
   host: "127.0.0.1",
   port: 1883,
-  client_id: "sensor",
-  clean_start: false,
-  name: :emqtt
+  clientid: "sensor"
 
 config :data_generator,
   num_facilities: 5,

@@ -78,7 +78,7 @@ defmodule DataGenerator do
   end
 
   defp get_topic_name(facility_num, signal_name) do
-    "measurements/facility#{facility_num}/#{signal_name}"
+    "measurements/facility_#{facility_num}/#{signal_name}"
   end
 
   defp generate_measurement(avg_signal_value) do
