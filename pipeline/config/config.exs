@@ -25,4 +25,5 @@ config :data_generator, :emqtt,
   name: :emqtt
 
 config :data_generator,
-  interval: Duration.new!(second: 5)
+  num_facilities: 5,
+  reporting_interval: Duration.new!(second: 5)
