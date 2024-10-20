@@ -1,3 +1,5 @@
+name: elixir-data-processing-pipeline-demo
+
 services:
   mqtt:
     image: eclipse-mosquitto:2.0
