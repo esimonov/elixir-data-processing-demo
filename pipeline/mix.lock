@@ -3,4 +3,5 @@
   "emqtt": {:git, "https://github.com/emqx/emqtt.git", "53b41364a0078877bcea93aaa5a581bf3319b708", [tag: "1.13.2"]},
   "getopt": {:hex, :getopt, "1.0.2", "33d9b44289fe7ad08627ddfe1d798e30b2da0033b51da1b3a2d64e72cd581d02", [:rebar3], [], "hexpm", "a0029aea4322fb82a61f6876a6d9c66dc9878b6cb61faa13df3187384fd4ea26"},
   "gun": {:git, "https://github.com/emqx/gun", "4faea40b9a8ca1eac5288355f8202e0cea379d50", [tag: "1.3.7"]},
+  "jason": {:hex, :jason, "1.4.4", "b9226785a9aa77b6857ca22832cffa5d5011a667207eb2a0ad56adb5db443b8a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "c5eb0cab91f094599f94d55bc63409236a8ec69a21a67814529e8d5f6cc90b3b"},
 }

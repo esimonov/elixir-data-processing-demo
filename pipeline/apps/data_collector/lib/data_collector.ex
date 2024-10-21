@@ -39,8 +39,8 @@ defmodule DataCollector do
     handle_publish(parse_topic(publish), publish, st)
   end
 
-  defp handle_publish(["measurements", facility_id, signal_name], %{payload: _payload}, state) do
-    IO.puts("Received: #{facility_id}, #{signal_name}")
+  defp handle_publish(["measurements", facility_id, signal_name], %{payload: payload}, state) do
+    IO.puts("Received: #{facility_id}, #{signal_name}, #{payload}")
 
     {:noreply, state}
   end

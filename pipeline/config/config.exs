@@ -30,3 +30,5 @@ config :data_generator, :emqtt,
 config :data_generator,
   num_facilities: 5,
   reporting_interval: Duration.new!(second: 5)
+
+Logger.put_module_level(:emqtt, :error)

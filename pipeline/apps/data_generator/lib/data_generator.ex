@@ -82,11 +82,10 @@ defmodule DataGenerator do
   end
 
   defp generate_measurement(avg_signal_value) do
-    # TODO: use map?
-    {
-      System.system_time(:millisecond),
-      :rand.normal(avg_signal_value, 0.5)
+    %{
+      "ts" => System.system_time(:millisecond),
+      "val" => :rand.normal(avg_signal_value, 1)
     }
-    |> :erlang.term_to_binary()
+    |> Jason.encode!()
   end
 end
