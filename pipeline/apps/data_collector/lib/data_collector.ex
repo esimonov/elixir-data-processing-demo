@@ -51,7 +51,5 @@ defmodule DataCollector do
     {:noreply, state}
   end
 
-  defp parse_topic(%{topic: topic}) do
-    String.split(topic, "/", trim: true)
-  end
+  defp parse_topic(%{topic: topic}), do: String.split(topic, "/", trim: true)
 end
