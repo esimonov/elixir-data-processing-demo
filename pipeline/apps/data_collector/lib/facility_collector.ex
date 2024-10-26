@@ -39,7 +39,19 @@ defmodule FacilityCollector do
   end
 
   defp compose_aggregated_document(measurements_state) do
-    IO.puts(Jason.encode!(measurements_state))
+    averages =
+      Enum.map(
+        measurements_state,
+        fn
+          {signal_name, %{sum: _sum, count: 0}} -> {"avg_#{signal_name}", 0}
+          {signal_name, %{sum: sum, count: count}} -> {"avg_#{signal_name}", sum / count}
+        end
+      )
+      |> Enum.into(%{})
+
+    # doc = %AggregatedDocument{}
+
+    IO.puts(Jason.encode!(averages))
   end
 
   defp reset_state() do
