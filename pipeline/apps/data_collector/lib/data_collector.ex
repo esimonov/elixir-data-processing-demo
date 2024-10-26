@@ -57,13 +57,25 @@ defmodule DataCollector do
        ) do
     case validate_measurement_json(payload) do
       {:ok, %{ts: ts, val: value}} ->
-        IO.puts("Received: #{facility_id}, #{signal_name}, timestamp:#{ts}, value:#{value}")
+        route_message(facility_id, signal_name, %{ts: ts, val: value})
 
       {:error, reason} ->
         IO.puts("Error! #{reason}")
     end
 
     {:noreply, state}
+  end
+
+  defp route_message(facility_id, signal_name, %{ts: ts, val: value}) do
+    case Registry.lookup(Registry.Facilities, facility_id) do
+      [{pid, _}] ->
+        GenServer.cast(pid, {:measurement, signal_name, %{ts: ts, val: value}})
+
+      [] ->
+        {:ok, pid} = FacilitySupervisor.start_child(facility_id)
+
+        GenServer.cast(pid, {:measurement, signal_name, %{ts: ts, val: value}})
+    end
   end
 
   defp parse_topic(%{topic: topic}), do: String.split(topic, "/", trim: true)

@@ -9,6 +9,8 @@ defmodule DataCollector.Application do
   def start(_type, _args) do
     children = [
       # Starts a worker by calling: DataCollector.Worker.start_link(arg)
+      {Registry, keys: :unique, name: Registry.Facilities},
+      FacilitySupervisor,
       {DataCollector, []}
     ]
 
