@@ -15,6 +15,12 @@ defmodule DataCollector do
 
   """
 
+  @signal_names [
+    "humidity",
+    "pressure",
+    "temperature"
+  ]
+
   def start_link(_args), do: GenServer.start_link(__MODULE__, [])
 
   def init(_args) do
@@ -25,31 +31,47 @@ defmodule DataCollector do
     {:ok, state, {:continue, :start_emqtt}}
   end
 
-  def handle_continue(:start_emqtt, %{pid: pid} = st) do
+  def handle_continue(:start_emqtt, %{pid: pid} = state) do
     {:ok, _} = :emqtt.connect(pid)
 
-    {:ok, _, _} = :emqtt.subscribe(pid, {"measurements/#", 1})
+    Enum.each(
+      @signal_names,
+      fn signal_name ->
+        {:ok, _, _} = :emqtt.subscribe(pid, {"measurements/+/#{signal_name}", 1})
+      end
+    )
 
     IO.puts("Collector subscribed")
-
-    {:noreply, st}
-  end
-
-  def handle_info({:publish, publish}, st) do
-    handle_publish(parse_topic(publish), publish, st)
-  end
-
-  defp handle_publish(["measurements", facility_id, signal_name], %{payload: payload}, state) do
-    IO.puts("Received: #{facility_id}, #{signal_name}, #{payload}")
 
     {:noreply, state}
   end
 
-  defp handle_publish(_, _, state) do
-    IO.puts("But why?")
+  def handle_info({:publish, publish}, state) do
+    handle_publish(parse_topic(publish), publish, state)
+  end
+
+  defp handle_publish(
+         ["measurements", facility_id, signal_name],
+         %{payload: payload},
+         state
+       ) do
+    case validate_measurement_json(payload) do
+      {:ok, %{ts: ts, val: value}} ->
+        IO.puts("Received: #{facility_id}, #{signal_name}, timestamp:#{ts}, value:#{value}")
+
+      {:error, reason} ->
+        IO.puts("Error! #{reason}")
+    end
 
     {:noreply, state}
   end
 
   defp parse_topic(%{topic: topic}), do: String.split(topic, "/", trim: true)
+
+  defp validate_measurement_json(json_string) do
+    case Jason.decode(json_string) do
+      {:ok, %{"ts" => ts, "val" => value}} -> {:ok, %{ts: ts, val: value}}
+      _ -> {:error, "Could not decode JSON"}
+    end
+  end
 end
