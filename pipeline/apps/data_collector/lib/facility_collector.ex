@@ -1,6 +1,8 @@
 defmodule FacilityCollector do
   use GenServer
 
+  @aggregations ["avg", "min", "max"]
+
   def start_link(facility_id) do
     GenServer.start_link(__MODULE__, %{facility_id: facility_id}, name: via_tuple(facility_id))
   end
@@ -26,34 +28,38 @@ defmodule FacilityCollector do
   defp update_measurement(state, signal_name, value) do
     IO.puts("Signal: #{signal_name}, val: #{value}")
 
-    signal_state = Map.get(state.measurements, signal_name, %{sum: 0.0, count: 0})
+    signal_state =
+      Map.get(
+        state.measurements,
+        signal_name,
+        %{sum: 0.0, count: 0, max: nil, min: nil}
+      )
 
     updated_signal_state = %{
       sum: signal_state.sum + value,
-      count: signal_state.count + 1
+      count: signal_state.count + 1,
+      max: max(signal_state.max || value, value),
+      min: min(signal_state.min || value, value)
     }
 
-    updated_measurements_state = Map.put(state.measurements, signal_name, updated_signal_state)
-
-    %{state | measurements: updated_measurements_state}
+    %{state | measurements: Map.put(state.measurements, signal_name, updated_signal_state)}
   end
 
   defp compose_aggregated_document(state) do
-    measurements_state = Map.get(state, :measurements, %{})
-
-    averages =
-      Enum.map(
-        measurements_state,
-        fn
-          {signal_name, %{sum: _sum, count: 0}} -> {"avg_#{signal_name}", 0}
-          {signal_name, %{sum: sum, count: count}} -> {"avg_#{signal_name}", sum / count}
-        end
-      )
+    aggregated_doc =
+      state
+      |> Map.get(:measurements, %{})
+      |> Stream.flat_map(fn {signal_name, measurement} ->
+        Stream.map(
+          @aggregations,
+          fn agg -> compute_aggregation(signal_name, measurement, agg) end
+        )
+      end)
       |> Enum.into(%{facility_id: state.facility_id})
 
     # doc = %AggregatedDocument{}
 
-    IO.puts(Jason.encode!(averages))
+    IO.puts(Jason.encode!(aggregated_doc))
   end
 
   defp reset_state(%{:facility_id => facility_id} = state) do
@@ -69,4 +75,11 @@ defmodule FacilityCollector do
       :timer => Process.send_after(self(), :aggregate, 10_000)
     }
   end
+
+  defp compute_aggregation(signal_name, %{sum: sum, count: count}, "avg") do
+    {"avg_#{signal_name}", if(count > 0, do: sum / count, else: 0)}
+  end
+
+  defp compute_aggregation(signal_name, %{max: max}, "max"), do: {"max_#{signal_name}", max}
+  defp compute_aggregation(signal_name, %{min: min}, "min"), do: {"min_#{signal_name}", min}
 end
