@@ -7,8 +7,8 @@ defmodule FacilityCollector do
 
   defp via_tuple(facility_id), do: {:via, Registry, {Registry.Facilities, facility_id}}
 
-  def init(_args) do
-    {:ok, reset_state()}
+  def init(args) do
+    {:ok, reset_state(args.facility_id)}
   end
 
   def handle_cast({:measurement, signal_name, %{ts: _ts, val: value}}, state) do
@@ -18,9 +18,9 @@ defmodule FacilityCollector do
   end
 
   def handle_info(:aggregate, state) do
-    compose_aggregated_document(Map.get(state, :measurements, %{}))
+    compose_aggregated_document(state)
 
-    {:noreply, reset_state()}
+    {:noreply, reset_state(state)}
   end
 
   defp update_measurement(state, signal_name, value) do
@@ -38,7 +38,9 @@ defmodule FacilityCollector do
     %{state | measurements: updated_measurements_state}
   end
 
-  defp compose_aggregated_document(measurements_state) do
+  defp compose_aggregated_document(state) do
+    measurements_state = Map.get(state, :measurements, %{})
+
     averages =
       Enum.map(
         measurements_state,
@@ -47,17 +49,24 @@ defmodule FacilityCollector do
           {signal_name, %{sum: sum, count: count}} -> {"avg_#{signal_name}", sum / count}
         end
       )
-      |> Enum.into(%{})
+      |> Enum.into(%{facility_id: state.facility_id})
 
     # doc = %AggregatedDocument{}
 
     IO.puts(Jason.encode!(averages))
   end
 
-  defp reset_state() do
+  defp reset_state(%{:facility_id => facility_id} = state) do
+    state
+    |> Map.get(state, facility_id)
+    |> reset_state
+  end
+
+  defp reset_state(facility_id) do
     %{
-      measurements: %{},
-      timer: Process.send_after(self(), :aggregate, 10_000)
+      :facility_id => facility_id,
+      :measurements => %{},
+      :timer => Process.send_after(self(), :aggregate, 10_000)
     }
   end
 end
