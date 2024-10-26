@@ -26,9 +26,7 @@ defmodule DataCollector do
   def init(_args) do
     {:ok, pid} = Application.get_env(:data_collector, :emqtt) |> :emqtt.start_link()
 
-    state = %{pid: pid}
-
-    {:ok, state, {:continue, :start_emqtt}}
+    {:ok, %{pid: pid}, {:continue, :start_emqtt}}
   end
 
   def handle_continue(:start_emqtt, %{pid: pid} = state) do
