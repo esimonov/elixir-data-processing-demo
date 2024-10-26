@@ -10,6 +10,12 @@ defmodule AggregatedDocument do
     :window_end,
     :avg_humidity,
     :avg_temperature,
-    :avg_pressure
+    :avg_pressure,
+    :max_humidity,
+    :max_temperature,
+    :max_pressure,
+    :min_humidity,
+    :min_temperature,
+    :min_pressure
   ]
 end

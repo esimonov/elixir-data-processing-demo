@@ -1,7 +1,11 @@
 defmodule FacilityCollector do
+  require Logger
   use GenServer
 
   @aggregations ["avg", "min", "max"]
+
+  # Loads struct field name atoms.
+  {:module, _} = Code.ensure_loaded(AggregatedDocument)
 
   def start_link(facility_id) do
     GenServer.start_link(__MODULE__, %{facility_id: facility_id}, name: via_tuple(facility_id))
@@ -46,13 +50,18 @@ defmodule FacilityCollector do
   end
 
   defp compose_aggregated_document(state) do
-    aggregated_doc =
+    aggregated_signals =
       state
       |> Map.get(:measurements, %{})
       |> Stream.flat_map(fn {signal_name, measurement} ->
         Stream.map(
           @aggregations,
-          fn agg -> compute_aggregation(signal_name, measurement, agg) end
+          fn agg ->
+            {
+              "#{agg}_#{signal_name}" |> String.to_existing_atom(),
+              compute_aggregation(measurement, agg)
+            }
+          end
         )
       end)
       |> Enum.into(%{
@@ -61,9 +70,9 @@ defmodule FacilityCollector do
         window_end: DateTime.utc_now()
       })
 
-    # doc = %AggregatedDocument{}
+    doc = struct(AggregatedDocument, aggregated_signals)
 
-    IO.puts(Jason.encode!(aggregated_doc))
+    doc |> inspect |> Logger.debug()
   end
 
   defp reset_state(%{:facility_id => facility_id} = state) do
@@ -81,10 +90,9 @@ defmodule FacilityCollector do
     }
   end
 
-  defp compute_aggregation(signal_name, %{sum: sum, count: count}, "avg") do
-    {"avg_#{signal_name}", if(count > 0, do: sum / count, else: 0)}
-  end
+  defp compute_aggregation(%{sum: sum, count: count}, "avg"),
+    do: if(count > 0, do: sum / count, else: 0)
 
-  defp compute_aggregation(signal_name, %{max: max}, "max"), do: {"max_#{signal_name}", max}
-  defp compute_aggregation(signal_name, %{min: min}, "min"), do: {"min_#{signal_name}", min}
+  defp compute_aggregation(%{max: max}, "max"), do: max
+  defp compute_aggregation(%{min: min}, "min"), do: min
 end
