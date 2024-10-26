@@ -7,10 +7,13 @@ defmodule FacilityCollector do
 
   defp via_tuple(facility_id), do: {:via, Registry, {Registry.Facilities, facility_id}}
 
-  def init(state) do
-    schedule_aggregation()
+  def init(_args) do
+    state = %{
+      timer: nil,
+      measurements: %{}
+    }
 
-    {:ok, Map.put(state, :measurements, %{})}
+    {:ok, schedule_aggregation(state)}
   end
 
   def handle_cast({:measurement, signal_name, %{ts: _ts, val: value}}, state) do
@@ -43,10 +46,12 @@ defmodule FacilityCollector do
   defp compose_aggregated_document(measurements_state) do
     IO.puts(Jason.encode!(measurements_state))
 
-    {:noreply, %{:measurements => %{}}}
+    {:noreply, schedule_aggregation(%{:measurements => %{}, timer: nil})}
   end
 
-  defp schedule_aggregation() do
-    Process.send_after(self(), :aggregate, 10_000)
+  defp schedule_aggregation(state) do
+    timer = Process.send_after(self(), :aggregate, 10_000)
+
+    %{state | timer: timer}
   end
 end
