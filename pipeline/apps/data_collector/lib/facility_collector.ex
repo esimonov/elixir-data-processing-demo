@@ -55,7 +55,11 @@ defmodule FacilityCollector do
           fn agg -> compute_aggregation(signal_name, measurement, agg) end
         )
       end)
-      |> Enum.into(%{facility_id: state.facility_id})
+      |> Enum.into(%{
+        facility_id: state.facility_id,
+        window_start: state.window_start,
+        window_end: DateTime.utc_now()
+      })
 
     # doc = %AggregatedDocument{}
 
@@ -72,6 +76,7 @@ defmodule FacilityCollector do
     %{
       :facility_id => facility_id,
       :measurements => %{},
+      :window_start => DateTime.utc_now(),
       :timer => Process.send_after(self(), :aggregate, 10_000)
     }
   end
