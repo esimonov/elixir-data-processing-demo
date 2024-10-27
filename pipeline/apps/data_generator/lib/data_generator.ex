@@ -41,7 +41,6 @@ defmodule DataGenerator do
       pid: pid,
       timer: nil,
       reporting_interval: Application.get_env(:data_generator, :reporting_interval),
-      num_facilities: @num_facilities
     }
 
     {:ok, set_timer(state), {:continue, :start_emqtt}}
@@ -53,8 +52,8 @@ defmodule DataGenerator do
     {:noreply, state}
   end
 
-  def handle_info(:tick, %{pid: pid, num_facilities: num_facilities} = state) do
-    report_measurements(pid, num_facilities)
+  def handle_info(:tick, %{pid: pid} = state) do
+    report_measurements(pid)
 
     {:noreply, set_timer(state)}
   end
@@ -65,8 +64,8 @@ defmodule DataGenerator do
     %{state | timer: timer}
   end
 
-  defp report_measurements(pid, num_facilities) do
-    1..num_facilities
+  defp report_measurements(pid) do
+    1..@num_facilities
     |> Stream.flat_map(fn facility_num ->
       Stream.map(
         @reported_signals,
