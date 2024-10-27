@@ -4,9 +4,6 @@ defmodule FacilityCollector do
 
   @aggregations ["avg", "min", "max"]
 
-  # Loads struct field name atoms.
-  {:module, _} = Code.ensure_loaded(AggregatedDocument)
-
   def start_link(facility_id) do
     GenServer.start_link(__MODULE__, %{facility_id: facility_id}, name: via_tuple(facility_id))
   end
@@ -50,11 +47,14 @@ defmodule FacilityCollector do
   end
 
   defp compose_aggregated_document(state) do
+    # Loads struct field name atoms.
+    {:module, _} = Code.ensure_loaded(AggregatedDocument)
+
     aggregated_signals =
       state
       |> Map.get(:measurements, %{})
-      |> Stream.flat_map(fn {signal_name, measurement} ->
-        Stream.map(
+      |> Enum.flat_map(fn {signal_name, measurement} ->
+        Enum.map(
           @aggregations,
           fn agg ->
             {
