@@ -40,7 +40,7 @@ defmodule DataGenerator do
     state = %{
       pid: pid,
       timer: nil,
-      reporting_interval: Application.get_env(:data_generator, :reporting_interval),
+      reporting_interval: Application.get_env(:data_generator, :reporting_interval)
     }
 
     {:ok, set_timer(state), {:continue, :start_emqtt}}
