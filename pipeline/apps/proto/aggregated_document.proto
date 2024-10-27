@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package data_processing_pipeline;
+
+message AggregatedDocument {
+  string facility_id = 1;
+  google.protobuf.Timestamp window_start = 2;
+  google.protobuf.Timestamp window_end = 3;
+  double avg_humidity = 4;
+  double avg_temperature = 5;
+  double avg_pressure = 6;
+  double max_humidity = 7;
+  double max_temperature = 8;
+  double max_pressure = 9;
+  double min_humidity = 10;
+  double min_temperature = 11;
+  double min_pressure = 12;
+}
