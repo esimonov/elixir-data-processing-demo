@@ -48,7 +48,7 @@ defmodule FacilityCollector do
 
   defp compose_aggregated_document(state) do
     # Loads struct field name atoms.
-    {:module, _} = Code.ensure_loaded(AggregatedDocument)
+    {:module, _} = Code.ensure_loaded(Schema.AggregatedDocument)
 
     aggregated_signals =
       state
@@ -66,11 +66,13 @@ defmodule FacilityCollector do
       end)
       |> Enum.into(%{
         facility_id: state.facility_id,
-        window_start: state.window_start,
-        window_end: DateTime.utc_now()
+        window: %{
+          start_time: state.window_start,
+          end_time: DateTime.utc_now()
+        }
       })
 
-    doc = struct(AggregatedDocument, aggregated_signals)
+    doc = struct(Schema.AggregatedDocument, aggregated_signals)
 
     doc |> inspect |> Logger.debug()
   end

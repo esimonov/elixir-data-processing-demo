@@ -1,11 +1,10 @@
-defmodule DataProcessingPipeline.AggregatedDocument do
+defmodule Schema.AggregatedDocument do
   @moduledoc false
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.13.0"
 
   field :facility_id, 1, type: :string, json_name: "facilityId"
-  field :window_start, 2, type: Google.Protobuf.Timestamp, json_name: "windowStart"
-  field :window_end, 3, type: Google.Protobuf.Timestamp, json_name: "windowEnd"
+  field :window, 2, type: Schema.Interval
   field :avg_humidity, 4, type: :double, json_name: "avgHumidity"
   field :avg_temperature, 5, type: :double, json_name: "avgTemperature"
   field :avg_pressure, 6, type: :double, json_name: "avgPressure"
@@ -15,4 +14,13 @@ defmodule DataProcessingPipeline.AggregatedDocument do
   field :min_humidity, 10, type: :double, json_name: "minHumidity"
   field :min_temperature, 11, type: :double, json_name: "minTemperature"
   field :min_pressure, 12, type: :double, json_name: "minPressure"
+end
+
+defmodule Schema.Interval do
+  @moduledoc false
+
+  use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.13.0"
+
+  field :start_time, 1, type: Google.Protobuf.Timestamp, json_name: "startTime"
+  field :end_time, 2, type: Google.Protobuf.Timestamp, json_name: "endTime"
 end
