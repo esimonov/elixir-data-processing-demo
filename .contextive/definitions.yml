@@ -1,0 +1,10 @@
+contexts:
+  - name: Data processing pipeline
+    domainVisionStatement: To demonstrate how various interesting technologies can be used for data processing in Elixir.
+    paths:
+      - "**"
+    terms:
+      - name: Aggregated Document
+        definition: A single document representing measurement statistics over a certain period of time.
+        examples:
+          - In our demo, aggregated documents are produced once in 15 seconds for each facility, but window size is easily configurable.
