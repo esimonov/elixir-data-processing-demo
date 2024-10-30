@@ -50,7 +50,7 @@ defmodule FacilityCollector do
     # Loads struct field name atoms.
     {:module, _} = Code.ensure_loaded(Schema.AggregatedDocument)
 
-    aggregated_signals =
+    doc =
       state
       |> Map.get(:measurements, %{})
       |> Enum.flat_map(fn {signal_name, measurement} ->
@@ -66,15 +66,13 @@ defmodule FacilityCollector do
       end)
       |> Enum.into(%{
         facility_id: state.facility_id,
-        window: %{
-          start_time: state.window_start,
-          end_time: DateTime.utc_now()
-        }
+        window_start: state.window_start,
+        window_end: DateTime.utc_now()
       })
 
-    doc = struct(Schema.AggregatedDocument, aggregated_signals)
+    encoded = encode_protobuf(doc)
 
-    doc |> inspect |> Logger.debug()
+    Enum.each([doc, encoded], fn el -> el |> inspect |> Logger.debug() end)
   end
 
   defp reset_state(%{:facility_id => facility_id} = state) do
@@ -97,4 +95,28 @@ defmodule FacilityCollector do
 
   defp compute_aggregation(%{max: max}, "max"), do: max
   defp compute_aggregation(%{min: min}, "min"), do: min
+
+  defp encode_protobuf(%{} = doc) do
+    struct(
+      Schema.AggregatedDocument,
+      Map.merge(doc, %{window: to_protobuf_interval(doc.window_start, doc.window_end)})
+    )
+    |> Schema.AggregatedDocument.encode()
+  end
+
+  defp to_protobuf_interval(start_time, end_time) do
+    %Schema.Interval{
+      start_time: to_protobuf_timestamp(start_time),
+      end_time: to_protobuf_timestamp(end_time)
+    }
+  end
+
+  defp to_protobuf_timestamp(datetime) do
+    micros = elem(datetime.microsecond, 0)
+
+    %Google.Protobuf.Timestamp{
+      seconds: DateTime.to_unix(datetime),
+      nanos: micros * 1_000
+    }
+  end
 end
