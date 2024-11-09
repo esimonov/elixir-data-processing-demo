@@ -1,6 +1,8 @@
 defmodule DataServer.KafkaConsumer do
   use Broadway
 
+  alias DataServer.Storage
+
   def start_link(_) do
     Broadway.start_link(__MODULE__,
       name: __MODULE__,
@@ -28,6 +30,6 @@ defmodule DataServer.KafkaConsumer do
   end
 
   defp save_to_database(document = %Schema.AggregatedDocument{}) do
-    IO.puts("Saving to Database! #{inspect(document)}")
+    Storage.insert(document)
   end
 end

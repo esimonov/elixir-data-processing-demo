@@ -44,4 +44,6 @@ config :data_server, :kafka_consumer,
     sasl: {:plain, "kafkauser", "kafkapassword"}
   ]
 
+config :data_server, storage: DataServer.Storage.Mongo
+
 Logger.put_module_level(:emqtt, :error)
