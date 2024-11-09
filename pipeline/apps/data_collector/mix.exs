@@ -26,6 +26,7 @@ defmodule DataCollector.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:brod, "~> 4.3"},
       {:emqtt, github: "emqx/emqtt", tag: "1.13.2", system_env: [{"BUILD_WITHOUT_QUIC", "1"}]},
       {:jason, "~> 1.4"},
       {:schema, in_umbrella: true}

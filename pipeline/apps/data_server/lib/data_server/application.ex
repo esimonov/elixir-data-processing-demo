@@ -8,8 +8,7 @@ defmodule DataServer.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: DataServer.Worker.start_link(arg)
-      # {DataServer.Worker, arg}
+      DataServer.KafkaConsumer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

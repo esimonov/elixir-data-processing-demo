@@ -22,6 +22,11 @@ config :data_collector, :emqtt,
   clientid: "collector",
   port: 1883
 
+config :data_collector, :kafka_producer,
+  brokers: [{"localhost", 9092}],
+  topic: "aggregated_data",
+  sasl: {:plain, "kafkauser", "kafkapassword"}
+
 config :data_generator, :emqtt,
   host: "127.0.0.1",
   port: 1883,
@@ -30,5 +35,13 @@ config :data_generator, :emqtt,
 config :data_generator,
   num_facilities: 5,
   reporting_interval: Duration.new!(second: 5)
+
+config :data_server, :kafka_consumer,
+  hosts: [{"localhost", 9092}],
+  group_id: "data_server_group",
+  topics: ["aggregated_data"],
+  client_config: [
+    sasl: {:plain, "kafkauser", "kafkapassword"}
+  ]
 
 Logger.put_module_level(:emqtt, :error)

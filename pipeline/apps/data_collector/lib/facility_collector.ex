@@ -21,7 +21,12 @@ defmodule FacilityCollector do
   end
 
   def handle_info(:aggregate, state) do
-    compose_aggregated_document(state)
+    with doc <- compose_aggregated_document(state),
+         :ok <- DataCollector.KafkaProducer.produce_aggregated_document(doc) do
+    else
+      {:error, reason} ->
+        Logger.error("Producing aggregated document: #{inspect(reason)}")
+    end
 
     {:noreply, reset_state(state)}
   end
@@ -33,12 +38,12 @@ defmodule FacilityCollector do
       Map.get(
         state.measurements,
         signal_name,
-        %{sum: 0.0, count: 0, max: nil, min: nil}
+        %{count: 0, sum: nil, max: nil, min: nil}
       )
 
     updated_signal_state = %{
-      sum: signal_state.sum + value,
       count: signal_state.count + 1,
+      sum: (signal_state.sum || 0) + value,
       max: max(signal_state.max || value, value),
       min: min(signal_state.min || value, value)
     }
@@ -50,29 +55,24 @@ defmodule FacilityCollector do
     # Loads struct field name atoms.
     {:module, _} = Code.ensure_loaded(Schema.AggregatedDocument)
 
-    doc =
-      state
-      |> Map.get(:measurements, %{})
-      |> Enum.flat_map(fn {signal_name, measurement} ->
-        Enum.map(
-          @aggregations,
-          fn agg ->
-            {
-              "#{agg}_#{signal_name}" |> String.to_existing_atom(),
-              compute_aggregation(measurement, agg)
-            }
-          end
-        )
-      end)
-      |> Enum.into(%{
-        facility_id: state.facility_id,
-        window_start: state.window_start,
-        window_end: DateTime.utc_now()
-      })
-
-    encoded = encode_protobuf(doc)
-
-    Enum.each([doc, encoded], fn el -> el |> inspect |> Logger.debug() end)
+    state
+    |> Map.get(:measurements, %{})
+    |> Enum.flat_map(fn {signal_name, measurement} ->
+      Enum.map(
+        @aggregations,
+        fn agg ->
+          {
+            "#{agg}_#{signal_name}" |> String.to_existing_atom(),
+            compute_aggregation(measurement, agg)
+          }
+        end
+      )
+    end)
+    |> Enum.into(%{
+      facility_id: state.facility_id,
+      window_start: state.window_start,
+      window_end: DateTime.utc_now()
+    })
   end
 
   defp reset_state(%{:facility_id => facility_id} = state) do
@@ -95,28 +95,4 @@ defmodule FacilityCollector do
 
   defp compute_aggregation(%{max: max}, "max"), do: max
   defp compute_aggregation(%{min: min}, "min"), do: min
-
-  defp encode_protobuf(%{} = doc) do
-    struct(
-      Schema.AggregatedDocument,
-      Map.merge(doc, %{window: to_protobuf_interval(doc.window_start, doc.window_end)})
-    )
-    |> Schema.AggregatedDocument.encode()
-  end
-
-  defp to_protobuf_interval(start_time, end_time) do
-    %Schema.Interval{
-      start_time: to_protobuf_timestamp(start_time),
-      end_time: to_protobuf_timestamp(end_time)
-    }
-  end
-
-  defp to_protobuf_timestamp(datetime) do
-    micros = elem(datetime.microsecond, 0)
-
-    %Google.Protobuf.Timestamp{
-      seconds: DateTime.to_unix(datetime),
-      nanos: micros * 1_000
-    }
-  end
 end

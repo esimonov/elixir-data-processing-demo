@@ -11,7 +11,8 @@ defmodule DataCollector.Application do
       # Starts a worker by calling: DataCollector.Worker.start_link(arg)
       {Registry, keys: :unique, name: Registry.Facilities},
       FacilitySupervisor,
-      {DataCollector, []}
+      DataCollector.KafkaProducer,
+      DataCollector
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
