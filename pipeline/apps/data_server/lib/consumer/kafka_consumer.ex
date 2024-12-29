@@ -24,12 +24,28 @@ defmodule DataServer.KafkaConsumer do
   def handle_message(_, %Broadway.Message{data: data} = message, _context) do
     data
     |> Schema.AggregatedDocument.decode()
-    |> save_to_database()
+    |> decode_protobuf()
+    |> Storage.insert_one(:aggregated_document)
 
     message
   end
 
-  defp save_to_database(document = %Schema.AggregatedDocument{}) do
-    Storage.insert(document)
+  defp decode_protobuf(%Schema.AggregatedDocument{window: window} = doc) do
+    doc
+    |> Map.from_struct()
+    |> Map.merge(%{window: from_protobuf_interval(window)})
+  end
+
+  defp from_protobuf_interval(%Schema.Interval{start_time: start_time, end_time: end_time}) do
+    %{
+      :start_time => from_protobuf_timestamp(start_time),
+      :end_time => from_protobuf_timestamp(end_time)
+    }
+  end
+
+  defp from_protobuf_timestamp(%Google.Protobuf.Timestamp{seconds: seconds, nanos: nanos}) do
+    seconds
+    |> DateTime.from_unix!()
+    |> DateTime.add(div(nanos, 1_000), :microsecond)
   end
 end

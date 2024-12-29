@@ -46,4 +46,15 @@ config :data_server, :kafka_consumer,
 
 config :data_server, storage: DataServer.Storage.Mongo
 
+config :data_server, storage_collection_name: "aggregated_data"
+
+config :data_server, DataServer.Storage.Mongo.Repo,
+  url: "mongodb://localhost:27017/elixir-data-processing-demo",
+  timeout: 60_000,
+  idle_interval: 10_000,
+  queue_target: 5_000,
+  username: "admin",
+  password: "password",
+  auth_source: "admin"
+
 Logger.put_module_level(:emqtt, :error)

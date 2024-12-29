@@ -4,7 +4,7 @@ services:
   kafka:
     image: bitnami/kafka:3.7
     ports:
-      - '9092:9092'
+      - "9092:9092"
     environment:
       - KAFKA_CLIENT_USERS=kafkauser
       - KAFKA_CLIENT_PASSWORDS=kafkapassword
@@ -19,6 +19,18 @@ services:
       - KAFKA_CLIENT_LISTENER_NAME=EXTERNAL
       - KAFKA_CFG_SASL_MECHANISM_CONTROLLER_PROTOCOL=PLAIN
       - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=PLAIN
+
+  mongo:
+    image: mongo:7.0
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_DATA_DIR: /data/mongodb
+      MONGO_LOG_DIR: /dev/null
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+
   mqtt:
     image: eclipse-mosquitto:2.0
     ports:

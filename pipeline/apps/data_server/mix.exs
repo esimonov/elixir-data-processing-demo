@@ -28,6 +28,7 @@ defmodule DataServer.MixProject do
     [
       {:broadway, "~> 1.1"},
       {:broadway_kafka, "~> 0.4"},
+      {:mongodb_driver, "~> 1.5.0"},
       {:schema, in_umbrella: true}
     ]
   end

@@ -3,5 +3,5 @@ defmodule DataServer.Storage do
 
   @target Application.compile_env(:data_server, :storage)
 
-  defdelegate insert(document), to: @target
+  defdelegate insert_one(document, document_type), to: @target
 end
