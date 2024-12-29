@@ -5,6 +5,17 @@ defmodule DataServer.Storage.Mongo do
 
   @behaviour DataServer.Behaviours.Storage
 
+  def find(:aggregated_document, filter \\ %{}) do
+    case Repo.all(AggregatedDocument, filter) do
+      {:error, %{} = err} ->
+        process_error(err)
+
+      res ->
+        {:ok,
+         for(doc <- res, do: doc |> AggregatedDocument.dump() |> AggregatedDocument.after_load())}
+    end
+  end
+
   def insert_one(map, :aggregated_document) do
     IO.puts("Saving to Database! #{inspect(map)}")
 
@@ -20,8 +31,8 @@ defmodule DataServer.Storage.Mongo do
   end
 
   defp process_error(%{write_errors: reason}),
-    do: {:error, :mongo_write_error, Enum.join(reason, ";")}
+    do: {:error, :mongo_write_error, reason}
 
   defp process_error(%{} = err),
-    do: {:error, :unknown_mongo_error, inspect(err)}
+    do: {:error, :unknown_mongo_error, err}
 end

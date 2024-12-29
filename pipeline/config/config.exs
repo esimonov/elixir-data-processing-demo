@@ -36,6 +36,8 @@ config :data_generator,
   num_facilities: 5,
   reporting_interval: Duration.new!(second: 5)
 
+config :data_server, http_server_port: 8080
+
 config :data_server, :kafka_consumer,
   hosts: [{"localhost", 9092}],
   group_id: "data_server_group",

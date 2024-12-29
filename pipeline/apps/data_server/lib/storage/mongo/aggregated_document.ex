@@ -32,6 +32,7 @@ defmodule Storage.Mongo.AggregatedDocument do
     attribute(:received_at, DateTime.t(), default: &DateTime.utc_now/0)
 
     after_load(&Storage.Mongo.AggregatedDocument.after_load/1)
+    before_dump(&Storage.Mongo.AggregatedDocument.before_dump/1)
   end
 
   def new(%{} = map) do
@@ -40,8 +41,15 @@ defmodule Storage.Mongo.AggregatedDocument do
     |> after_load()
   end
 
-  @spec after_load(Storage.Mongo.AggregatedDocument.t()) :: Storage.Mongo.AggregatedDocument.t()
   def after_load(%Storage.Mongo.AggregatedDocument{_id: id} = doc) do
     %Storage.Mongo.AggregatedDocument{doc | id: BSON.ObjectId.encode!(id)}
+  end
+
+  def after_load(%{} = doc) do
+    Map.drop(doc, ["_id"])
+  end
+
+  def before_dump(%Storage.Mongo.AggregatedDocument{} = doc) do
+    %Storage.Mongo.AggregatedDocument{doc | id: nil}
   end
 end

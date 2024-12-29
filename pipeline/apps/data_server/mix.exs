@@ -28,7 +28,10 @@ defmodule DataServer.MixProject do
     [
       {:broadway, "~> 1.1"},
       {:broadway_kafka, "~> 0.4"},
+      {:cowlib, "2.12.1", override: true},
       {:mongodb_driver, "~> 1.5.0"},
+      {:plug, "~> 1.16"},
+      {:plug_cowboy, "~> 2.7"},
       {:schema, in_umbrella: true}
     ]
   end

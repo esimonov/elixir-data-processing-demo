@@ -9,7 +9,13 @@ defmodule DataServer.Application do
   def start(_type, _args) do
     children = [
       {Mongo, DataServer.Storage.Mongo.Repo.config()},
-      DataServer.KafkaConsumer
+      DataServer.KafkaConsumer,
+      {
+        Plug.Cowboy,
+        scheme: :http,
+        plug: DataServer.HTTPAPI.Server,
+        options: [port: Application.fetch_env!(:data_server, :http_server_port)]
+      }
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
