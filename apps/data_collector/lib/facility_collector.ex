@@ -28,7 +28,7 @@ defmodule FacilityCollector do
     {:noreply, updated_state}
   end
 
-  def handle_info(:compact_readings, state) do
+  def handle_info(:compact_readings, %{facility_id: facility_id} = state) do
     with doc <- compact_readings(state),
          :ok <- DataCollector.KafkaProducer.produce(doc) do
     else
@@ -36,7 +36,7 @@ defmodule FacilityCollector do
         Logger.error("Producing compacted reading: #{inspect(reason)}")
     end
 
-    {:noreply, reset_state(state)}
+    {:noreply, reset_state(facility_id)}
   end
 
   defp update_readings_state(state, sensor_name, value) do
@@ -81,12 +81,6 @@ defmodule FacilityCollector do
       window_start: state.window_start,
       window_end: DateTime.utc_now()
     })
-  end
-
-  defp reset_state(%{facility_id: facility_id} = state) do
-    state
-    |> Map.get(state, facility_id)
-    |> reset_state
   end
 
   defp reset_state(facility_id) do
