@@ -33,7 +33,7 @@ config :data_generator, :emqtt,
   clientid: "sensor"
 
 config :data_generator,
-  num_facilities: 1,
+  num_facilities: 3,
   reporting_interval: Duration.new!(second: 5)
 
 config :data_server, http_server_port: 8080
