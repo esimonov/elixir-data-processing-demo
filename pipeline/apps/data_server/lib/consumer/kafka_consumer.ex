@@ -4,33 +4,19 @@ defmodule DataServer.KafkaConsumer do
   alias DataServer.Storage
 
   def start_link(_) do
-    Broadway.start_link(__MODULE__,
-      name: __MODULE__,
-      producer: [
-        module: {
-          BroadwayKafka.Producer,
-          Application.get_env(:data_server, :kafka_consumer)
-        },
-        concurrency: 1
-      ],
-      processors: [
-        default: [
-          concurrency: 10
-        ]
-      ]
-    )
+    Broadway.start_link(__MODULE__, Application.get_env(:data_server, :broadway, %{}))
   end
 
   def handle_message(_, %Broadway.Message{data: data} = message, _context) do
     data
-    |> Schema.AggregatedDocument.decode()
+    |> Schema.CompactedReading.decode()
     |> decode_protobuf()
-    |> Storage.insert_one(:aggregated_document)
+    |> Storage.insert_one(:compacted_reading)
 
     message
   end
 
-  defp decode_protobuf(%Schema.AggregatedDocument{window: window} = doc) do
+  defp decode_protobuf(%Schema.CompactedReading{window: window} = doc) do
     doc
     |> Map.from_struct()
     |> Map.merge(%{window: from_protobuf_interval(window)})
@@ -38,8 +24,8 @@ defmodule DataServer.KafkaConsumer do
 
   defp from_protobuf_interval(%Schema.Interval{start_time: start_time, end_time: end_time}) do
     %{
-      :start_time => from_protobuf_timestamp(start_time),
-      :end_time => from_protobuf_timestamp(end_time)
+      start_time: from_protobuf_timestamp(start_time),
+      end_time: from_protobuf_timestamp(end_time)
     }
   end
 

@@ -9,11 +9,11 @@ defmodule Storage.Mongo.Window do
   end
 end
 
-defmodule Storage.Mongo.AggregatedDocument do
+defmodule Storage.Mongo.CompactedReading do
   require Logger
   use Mongo.Collection
 
-  @coll_name Application.compile_env(:data_server, :storage_collection_name)
+  @coll_name Application.compile_env(:data_server, :compacted_readings_coll_name)
 
   collection @coll_name do
     # The `dump` function will remove the attribute automatically before saving to the database.
@@ -31,8 +31,8 @@ defmodule Storage.Mongo.AggregatedDocument do
     embeds_one(:window, Storage.Mongo.Window, default: &Storage.Mongo.Window.new/0)
     attribute(:received_at, DateTime.t(), default: &DateTime.utc_now/0)
 
-    after_load(&Storage.Mongo.AggregatedDocument.after_load/1)
-    before_dump(&Storage.Mongo.AggregatedDocument.before_dump/1)
+    after_load(&Storage.Mongo.CompactedReading.after_load/1)
+    before_dump(&Storage.Mongo.CompactedReading.before_dump/1)
   end
 
   def new(%{} = map) do
@@ -41,15 +41,15 @@ defmodule Storage.Mongo.AggregatedDocument do
     |> after_load()
   end
 
-  def after_load(%Storage.Mongo.AggregatedDocument{_id: id} = doc) do
-    %Storage.Mongo.AggregatedDocument{doc | id: BSON.ObjectId.encode!(id)}
+  def after_load(%Storage.Mongo.CompactedReading{_id: id} = doc) do
+    %Storage.Mongo.CompactedReading{doc | id: BSON.ObjectId.encode!(id)}
   end
 
   def after_load(%{} = doc) do
     Map.drop(doc, ["_id"])
   end
 
-  def before_dump(%Storage.Mongo.AggregatedDocument{} = doc) do
-    %Storage.Mongo.AggregatedDocument{doc | id: nil}
+  def before_dump(%Storage.Mongo.CompactedReading{} = doc) do
+    %Storage.Mongo.CompactedReading{doc | id: nil}
   end
 end

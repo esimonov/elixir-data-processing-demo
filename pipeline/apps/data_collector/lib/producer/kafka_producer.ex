@@ -23,21 +23,15 @@ defmodule DataCollector.KafkaProducer do
     Supervisor.init([], strategy: :one_for_one)
   end
 
-  def produce_aggregated_document(%{:facility_id => facility_id} = doc) do
-    doc
-    |> encode_protobuf()
-    |> produce_message(facility_id, Keyword.get(@kafka_config, :topic))
-  end
-
-  def produce_message(message, key, topic_name) do
+  def produce(%{facility_id: facility_id} = doc) do
     try do
       :ok =
         :brod.produce_sync(
           :brod_client,
-          topic_name,
+          Keyword.get(@kafka_config, :topic),
           :hash,
-          key,
-          message
+          facility_id,
+          encode_protobuf(doc)
         )
     rescue
       e -> {:error, e}
@@ -46,10 +40,13 @@ defmodule DataCollector.KafkaProducer do
 
   defp encode_protobuf(%{} = doc) do
     struct(
-      Schema.AggregatedDocument,
-      Map.merge(doc, %{window: to_protobuf_interval(doc.window_start, doc.window_end)})
+      Schema.CompactedReading,
+      Map.merge(
+        doc,
+        %{window: to_protobuf_interval(doc.window_start, doc.window_end)}
+      )
     )
-    |> Schema.AggregatedDocument.encode()
+    |> Schema.CompactedReading.encode()
   end
 
   defp to_protobuf_interval(start_time, end_time) do

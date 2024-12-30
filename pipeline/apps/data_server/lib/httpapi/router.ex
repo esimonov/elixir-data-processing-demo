@@ -15,15 +15,15 @@ defmodule DataServer.HTTPAPI.Server do
 
   plug(:dispatch)
 
-  get "/api/signals/:facility_id" do
+  get "/api/sensors/:facility_id" do
     case Storage.find(
-           :aggregated_document,
+           :compacted_reading,
            %{
              facility_id: conn.params["facility_id"]
            }
          ) do
       {:ok, resource} ->
-        send_resp(conn, 200, Jason.encode!(resource))
+        send_resp(conn, 200, Jason.encode!(resource, pretty: true))
 
       {:error, _reason, _details} ->
         send_resp(conn, 404, Jason.encode!(%{error: "Resource not found"}))

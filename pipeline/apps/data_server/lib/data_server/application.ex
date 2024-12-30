@@ -14,7 +14,7 @@ defmodule DataServer.Application do
         Plug.Cowboy,
         scheme: :http,
         plug: DataServer.HTTPAPI.Server,
-        options: [port: Application.fetch_env!(:data_server, :http_server_port)]
+        options: [port: Application.get_env(:data_server, :http_server_port)]
       }
     ]
 

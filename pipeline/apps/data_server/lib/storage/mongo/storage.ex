@@ -1,32 +1,37 @@
 defmodule DataServer.Storage.Mongo do
-  alias Storage.Mongo.AggregatedDocument
+  alias Storage.Mongo.CompactedReading
 
   alias DataServer.Storage.Mongo.Repo
 
   @behaviour DataServer.Behaviours.Storage
 
-  def find(:aggregated_document, filter \\ %{}) do
-    case Repo.all(AggregatedDocument, filter) do
+  def find(:compacted_reading, filter \\ %{}) do
+    case Repo.all(CompactedReading, filter) do
       {:error, %{} = err} ->
         process_error(err)
 
       res ->
-        {:ok,
-         for(doc <- res, do: doc |> AggregatedDocument.dump() |> AggregatedDocument.after_load())}
+        {
+          :ok,
+          for(
+            doc <- res,
+            do:
+              doc
+              |> CompactedReading.dump()
+              |> CompactedReading.after_load()
+          )
+        }
     end
   end
 
-  def insert_one(map, :aggregated_document) do
+  def insert_one(map, :compacted_reading) do
     IO.puts("Saving to Database! #{inspect(map)}")
 
-    doc = AggregatedDocument.new(map)
+    doc = CompactedReading.new(map)
 
     case Repo.insert(doc) do
-      {:ok, res} ->
-        {:ok, res}
-
-      {:error, %{} = err} ->
-        process_error(err)
+      {:ok, res} -> {:ok, res}
+      {:error, %{} = err} -> process_error(err)
     end
   end
 

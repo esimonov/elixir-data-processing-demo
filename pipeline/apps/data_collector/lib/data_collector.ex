@@ -15,11 +15,13 @@ defmodule DataCollector do
 
   """
 
-  @signal_names [
+  @sensor_names [
     "humidity",
     "pressure",
     "temperature"
   ]
+
+  @topics_prefix "sensor_readings"
 
   def start_link(_args), do: GenServer.start_link(__MODULE__, [])
 
@@ -33,9 +35,9 @@ defmodule DataCollector do
     {:ok, _} = :emqtt.connect(pid)
 
     Enum.each(
-      @signal_names,
-      fn signal_name ->
-        {:ok, _, _} = :emqtt.subscribe(pid, {"measurements/+/#{signal_name}", 1})
+      @sensor_names,
+      fn name ->
+        {:ok, _, _} = :emqtt.subscribe(pid, {compose_topic(name), 1})
       end
     )
 
@@ -49,13 +51,13 @@ defmodule DataCollector do
   end
 
   defp handle_publish(
-         ["measurements", facility_id, signal_name],
+         [@topics_prefix, facility_id, sensor_name],
          %{payload: payload},
          state
        ) do
-    case validate_measurement_json(payload) do
+    case validate_sensor_reading(payload) do
       {:ok, %{ts: ts, val: value}} ->
-        route_message(facility_id, signal_name, %{ts: ts, val: value})
+        route_message(facility_id, sensor_name, %{ts: ts, val: value})
 
       {:error, reason} ->
         IO.puts("Error! #{reason}")
@@ -64,24 +66,28 @@ defmodule DataCollector do
     {:noreply, state}
   end
 
-  defp route_message(facility_id, signal_name, %{ts: ts, val: value}) do
-    case Registry.lookup(Registry.Facilities, facility_id) do
-      [{pid, _}] ->
-        GenServer.cast(pid, {:measurement, signal_name, %{ts: ts, val: value}})
+  defp route_message(facility_id, sensor_name, %{ts: ts, val: value}) do
+    pid =
+      case Registry.lookup(Registry.Facilities, facility_id) do
+        [{pid, _}] ->
+          pid
 
-      [] ->
-        {:ok, pid} = FacilitySupervisor.start_child(facility_id)
+        [] ->
+          {:ok, pid} = FacilitySupervisor.start_child(facility_id)
+          pid
+      end
 
-        GenServer.cast(pid, {:measurement, signal_name, %{ts: ts, val: value}})
-    end
+    GenServer.cast(pid, {sensor_name, %{ts: ts, val: value}})
   end
 
-  defp parse_topic(%{topic: topic}), do: String.split(topic, "/", trim: true)
-
-  defp validate_measurement_json(json_string) do
+  defp validate_sensor_reading(json_string) do
     case Jason.decode(json_string) do
       {:ok, %{"ts" => ts, "val" => value}} -> {:ok, %{ts: ts, val: value}}
       _ -> {:error, "Could not decode JSON"}
     end
   end
+
+  defp compose_topic(sensor_name), do: "#{@topics_prefix}/+/#{sensor_name}"
+
+  defp parse_topic(%{topic: topic}), do: String.split(topic, "/", trim: true)
 end

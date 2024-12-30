@@ -24,7 +24,7 @@ config :data_collector, :emqtt,
 
 config :data_collector, :kafka_producer,
   brokers: [{"localhost", 9092}],
-  topic: "aggregated_data",
+  topic: "compacted_sensor_readings",
   sasl: {:plain, "kafkauser", "kafkapassword"}
 
 config :data_generator, :emqtt,
@@ -33,22 +33,33 @@ config :data_generator, :emqtt,
   clientid: "sensor"
 
 config :data_generator,
-  num_facilities: 5,
+  num_facilities: 1,
   reporting_interval: Duration.new!(second: 5)
 
 config :data_server, http_server_port: 8080
 
-config :data_server, :kafka_consumer,
-  hosts: [{"localhost", 9092}],
-  group_id: "data_server_group",
-  topics: ["aggregated_data"],
-  client_config: [
-    sasl: {:plain, "kafkauser", "kafkapassword"}
+config :data_server, :broadway,
+  name: DataServer.Broadway,
+  producer: [
+    module:
+      {BroadwayKafka.Producer,
+       [
+         hosts: [{"localhost", 9092}],
+         group_id: "data_server_group",
+         topics: ["compacted_sensor_readings"],
+         client_config: [
+           sasl: {:plain, "kafkauser", "kafkapassword"}
+         ]
+       ]},
+    concurrency: 1
+  ],
+  processors: [
+    default: [concurrency: 10]
   ]
 
 config :data_server, storage: DataServer.Storage.Mongo
 
-config :data_server, storage_collection_name: "aggregated_data"
+config :data_server, compacted_readings_coll_name: "compacted_sensor_readings"
 
 config :data_server, DataServer.Storage.Mongo.Repo,
   url: "mongodb://localhost:27017/elixir-data-processing-demo",

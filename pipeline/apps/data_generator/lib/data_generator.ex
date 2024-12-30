@@ -1,7 +1,7 @@
 defmodule DataGenerator do
   use GenServer
 
-  @reported_signals [
+  @sensors [
     %{name: "humidity", mean: 50},
     %{name: "pressure", mean: 1013},
     %{name: "temperature", mean: 20}
@@ -21,19 +21,6 @@ defmodule DataGenerator do
   # GenServer boilerplate
   def start_link(_), do: GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
 
-  @moduledoc """
-  Documentation for `DataGenerator`.
-  """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> DataGenerator.hello()
-      :world
-
-  """
   def init(_args) do
     {:ok, pid} = Application.get_env(:data_generator, :emqtt) |> :emqtt.start_link()
 
@@ -53,7 +40,7 @@ defmodule DataGenerator do
   end
 
   def handle_info(:tick, %{pid: pid} = state) do
-    report_measurements(pid)
+    report_readings(pid)
 
     {:noreply, set_timer(state)}
   end
@@ -64,15 +51,15 @@ defmodule DataGenerator do
     %{state | timer: timer}
   end
 
-  defp report_measurements(pid) do
+  defp report_readings(pid) do
     1..@num_facilities
     |> Stream.flat_map(fn facility_num ->
       Stream.map(
-        @reported_signals,
-        fn %{name: signal_name, mean: signal_mean} ->
+        @sensors,
+        fn %{name: sensor_name, mean: mean_value} ->
           {
-            get_topic_name(facility_num, signal_name),
-            generate_measurement(facility_num, signal_mean)
+            get_topic_name(facility_num, sensor_name),
+            generate_reading(facility_num, mean_value)
           }
         end
       )
@@ -81,24 +68,23 @@ defmodule DataGenerator do
     |> Stream.run()
   end
 
-  defp get_topic_name(facility_num, signal_name) do
-    "measurements/facility_#{facility_num}/#{signal_name}"
-  end
+  defp generate_reading(facility_num, mean_value) do
+    min_variance = @min_variance_percent * mean_value / 100
 
-  # The higher the number of the facility, the more variability its signals show.
-  defp generate_measurement(facility_num, mean) do
-    min_variance = @min_variance_percent * mean / 100
-
-    max_variance = @max_variance_percent * mean / 100
+    max_variance = @max_variance_percent * mean_value / 100
 
     step = (max_variance - min_variance) / @num_facilities
 
+    # The higher the number of the facility, the more variance its sensor readings show.
     variance = min_variance + step * facility_num
 
-    %{
+    Jason.encode!(%{
       "ts" => System.system_time(:millisecond),
-      "val" => :rand.normal(mean, variance)
-    }
-    |> Jason.encode!()
+      "val" => :rand.normal(mean_value, variance)
+    })
+  end
+
+  defp get_topic_name(facility_num, sensor_name) do
+    "sensor_readings/facility_#{facility_num}/#{sensor_name}"
   end
 end

@@ -2,68 +2,76 @@ defmodule FacilityCollector do
   require Logger
   use GenServer
 
-  @aggregations ["avg", "min", "max"]
+  @aggregations [
+    "avg",
+    "min",
+    "max"
+  ]
 
   def start_link(facility_id) do
-    GenServer.start_link(__MODULE__, %{facility_id: facility_id}, name: via_tuple(facility_id))
+    GenServer.start_link(
+      __MODULE__,
+      %{facility_id: facility_id},
+      name: via(facility_id)
+    )
   end
 
-  defp via_tuple(facility_id), do: {:via, Registry, {Registry.Facilities, facility_id}}
+  defp via(facility_id), do: {:via, Registry, {Registry.Facilities, facility_id}}
 
-  def init(args) do
-    {:ok, reset_state(args.facility_id)}
+  def init(%{facility_id: facility_id}) do
+    {:ok, reset_state(facility_id)}
   end
 
-  def handle_cast({:measurement, signal_name, %{ts: _ts, val: value}}, state) do
-    updated_state = update_measurement(state, signal_name, value)
+  def handle_cast({sensor_name, %{val: value}}, state) do
+    updated_state = update_readings_state(state, sensor_name, value)
 
     {:noreply, updated_state}
   end
 
-  def handle_info(:aggregate, state) do
-    with doc <- compose_aggregated_document(state),
-         :ok <- DataCollector.KafkaProducer.produce_aggregated_document(doc) do
+  def handle_info(:compact_readings, state) do
+    with doc <- compact_readings(state),
+         :ok <- DataCollector.KafkaProducer.produce(doc) do
     else
       {:error, reason} ->
-        Logger.error("Producing aggregated document: #{inspect(reason)}")
+        Logger.error("Producing compacted reading: #{inspect(reason)}")
     end
 
     {:noreply, reset_state(state)}
   end
 
-  defp update_measurement(state, signal_name, value) do
-    IO.puts("Signal: #{signal_name}, val: #{value}")
+  defp update_readings_state(state, sensor_name, value) do
+    IO.puts("Sensor: #{sensor_name}, val: #{value}")
 
-    signal_state =
+    sensor_state =
       Map.get(
-        state.measurements,
-        signal_name,
+        state.readings,
+        sensor_name,
         %{count: 0, sum: nil, max: nil, min: nil}
       )
 
-    updated_signal_state = %{
-      count: signal_state.count + 1,
-      sum: (signal_state.sum || 0) + value,
-      max: max(signal_state.max || value, value),
-      min: min(signal_state.min || value, value)
+    updated_state = %{
+      count: sensor_state.count + 1,
+      sum: (sensor_state.sum || 0) + value,
+      max: max(sensor_state.max || value, value),
+      min: min(sensor_state.min || value, value)
     }
 
-    %{state | measurements: Map.put(state.measurements, signal_name, updated_signal_state)}
+    %{state | readings: Map.put(state.readings, sensor_name, updated_state)}
   end
 
-  defp compose_aggregated_document(state) do
+  defp compact_readings(state) do
     # Loads struct field name atoms.
-    {:module, _} = Code.ensure_loaded(Schema.AggregatedDocument)
+    {:module, _} = Code.ensure_loaded(Schema.CompactedReading)
 
     state
-    |> Map.get(:measurements, %{})
-    |> Enum.flat_map(fn {signal_name, measurement} ->
+    |> Map.get(:readings, %{})
+    |> Enum.flat_map(fn {sensor_name, reading} ->
       Enum.map(
         @aggregations,
         fn agg ->
           {
-            "#{agg}_#{signal_name}" |> String.to_existing_atom(),
-            compute_aggregation(measurement, agg)
+            "#{agg}_#{sensor_name}" |> String.to_existing_atom(),
+            aggregate(reading, agg)
           }
         end
       )
@@ -75,7 +83,7 @@ defmodule FacilityCollector do
     })
   end
 
-  defp reset_state(%{:facility_id => facility_id} = state) do
+  defp reset_state(%{facility_id: facility_id} = state) do
     state
     |> Map.get(state, facility_id)
     |> reset_state
@@ -83,16 +91,16 @@ defmodule FacilityCollector do
 
   defp reset_state(facility_id) do
     %{
-      :facility_id => facility_id,
-      :measurements => %{},
-      :window_start => DateTime.utc_now(),
-      :timer => Process.send_after(self(), :aggregate, 10_000)
+      facility_id: facility_id,
+      readings: %{},
+      window_start: DateTime.utc_now(),
+      timer: Process.send_after(self(), :compact_readings, 10_000)
     }
   end
 
-  defp compute_aggregation(%{sum: sum, count: count}, "avg"),
+  defp aggregate(%{sum: sum, count: count}, "avg"),
     do: if(count > 0, do: sum / count, else: 0)
 
-  defp compute_aggregation(%{max: max}, "max"), do: max
-  defp compute_aggregation(%{min: min}, "min"), do: min
+  defp aggregate(%{max: max}, "max"), do: max
+  defp aggregate(%{min: min}, "min"), do: min
 end

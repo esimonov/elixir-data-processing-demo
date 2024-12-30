@@ -4,7 +4,9 @@ import "google/protobuf/timestamp.proto";
 
 package schema;
 
-message AggregatedDocument {
+// CompactedReading is a representation of multiple sensor readings over an
+// interval.
+message CompactedReading {
   reserved 3;
   string facility_id = 1;
   Interval window = 2;
