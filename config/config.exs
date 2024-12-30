@@ -27,6 +27,9 @@ config :data_collector, :kafka_producer,
   topic: "compacted_sensor_readings",
   sasl: {:plain, "kafkauser", "kafkapassword"}
 
+config :data_collector,
+  compaction_interval: Duration.new!(second: 10)
+
 config :data_generator, :emqtt,
   host: "127.0.0.1",
   port: 1883,

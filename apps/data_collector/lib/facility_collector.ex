@@ -8,6 +8,8 @@ defmodule FacilityCollector do
     "max"
   ]
 
+  @compaction_interval Application.compile_env!(:data_collector, :compaction_interval)
+
   def start_link(facility_id) do
     GenServer.start_link(
       __MODULE__,
@@ -88,7 +90,7 @@ defmodule FacilityCollector do
       facility_id: facility_id,
       readings: %{},
       window_start: DateTime.utc_now(),
-      timer: Process.send_after(self(), :compact_readings, 10_000)
+      timer: Process.send_after(self(), :compact_readings, to_timeout(@compaction_interval))
     }
   end
 
