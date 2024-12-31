@@ -2,6 +2,5 @@
     "[elixir]": {
         "editor.defaultFormatter": "elliotekj.elixir-mix-format"
     },
-    "elixirLS.projectDir": "pipeline",
     "editor.formatOnSave": true,
 }
