@@ -1,10 +1,10 @@
-defmodule DataServer.HTTPAPI.Server do
+defmodule DataServer.HTTPAPI.Router do
   use Plug.Router
 
-  alias DataServer.Storage
+  alias DataServer.HTTPAPI.Handlers.Error
+  alias DataServer.HTTPAPI.Handlers.Sensor
 
   plug(:match)
-
   plug(Plug.Logger)
 
   plug(Plug.Parsers,
@@ -16,21 +16,10 @@ defmodule DataServer.HTTPAPI.Server do
   plug(:dispatch)
 
   get "/api/sensors/:facility_id" do
-    case Storage.find(
-           :compacted_reading,
-           %{
-             facility_id: conn.params["facility_id"]
-           }
-         ) do
-      {:ok, resource} ->
-        send_resp(conn, 200, Jason.encode!(resource, pretty: true))
-
-      {:error, _reason, _details} ->
-        send_resp(conn, 404, Jason.encode!(%{error: "Resource not found"}))
-    end
+    Sensor.find(conn)
   end
 
   match _ do
-    send_resp(conn, 404, Jason.encode!(%{error: "Not found"}))
+    Error.not_found(conn)
   end
 end

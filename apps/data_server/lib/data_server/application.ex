@@ -13,7 +13,7 @@ defmodule DataServer.Application do
       {
         Plug.Cowboy,
         scheme: :http,
-        plug: DataServer.HTTPAPI.Server,
+        plug: DataServer.HTTPAPI.Router,
         options: [port: Application.get_env(:data_server, :http_server_port)]
       }
     ]
