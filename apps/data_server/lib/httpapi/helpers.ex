@@ -1,8 +1,17 @@
 defmodule DataServer.HTTPAPI.Helpers do
-  def validate_limit(limit, default_limit \\ 10, max_limit \\ 20)
+  def validate_limit(limit, opts \\ []) do
+    opts = Keyword.merge([default_limit: 10, max_limit: 20], opts)
 
-  def validate_limit(limit, default_limit, max_limit)
-      when is_binary(limit) do
+    default_limit = Keyword.fetch!(opts, :default_limit)
+    max_limit = Keyword.fetch!(opts, :max_limit)
+
+    do_validate_limit(limit, default_limit, max_limit)
+  end
+
+  defp do_validate_limit("", default_limit, max_limit), do: {:ok, min(default_limit, max_limit)}
+
+  defp do_validate_limit(limit, default_limit, max_limit)
+       when is_binary(limit) do
     case Integer.parse(limit) do
       {0, ""} -> {:ok, default_limit}
       {value, ""} when value > 0 -> {:ok, min(value, max_limit)}
@@ -10,7 +19,9 @@ defmodule DataServer.HTTPAPI.Helpers do
     end
   end
 
-  def validate_limit(_, _, _), do: {:error, "Invalid limit: must be a non-negative integer"}
+  defp do_validate_limit(_, _, _), do: {:error, "Invalid limit: must be a non-negative integer"}
+
+  def validate_offset(""), do: {:ok, 0}
 
   def validate_offset(offset) when is_binary(offset) do
     case Integer.parse(offset) do
