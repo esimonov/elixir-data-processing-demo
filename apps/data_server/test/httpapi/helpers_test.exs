@@ -7,8 +7,8 @@ defmodule DataServer.HTTPAPI.HelpersTest do
       assert Helpers.validate_limit("0") == {:ok, 10}
     end
 
-    test "returns default limit when input is empty string" do
-      assert Helpers.validate_limit("") == {:ok, 10}
+    test "returns default limit when input is nil" do
+      assert Helpers.validate_limit(nil) == {:ok, 10}
     end
 
     test "returns parsed limit when input is within the max limit" do
@@ -28,11 +28,6 @@ defmodule DataServer.HTTPAPI.HelpersTest do
                {:error, "Invalid limit: must be a positive integer"}
     end
 
-    test "returns error for nil limit" do
-      assert Helpers.validate_limit(nil) ==
-               {:error, "Invalid limit: must be a non-negative integer"}
-    end
-
     test "allows custom default and max limits" do
       assert Helpers.validate_limit("0", default_limit: 15) == {:ok, 15}
       assert Helpers.validate_limit("30", max_limit: 25) == {:ok, 25}
@@ -44,8 +39,8 @@ defmodule DataServer.HTTPAPI.HelpersTest do
       assert Helpers.validate_offset("10") == {:ok, 10}
     end
 
-    test "returns 0 for empty string" do
-      assert Helpers.validate_offset("") ==
+    test "returns 0 for nil offset" do
+      assert Helpers.validate_offset(nil) ==
                {:ok, 0}
     end
 
@@ -56,11 +51,6 @@ defmodule DataServer.HTTPAPI.HelpersTest do
 
     test "returns error for non-integer offset" do
       assert Helpers.validate_offset("abc") ==
-               {:error, "Invalid offset: must be a non-negative integer"}
-    end
-
-    test "returns error for nil offset" do
-      assert Helpers.validate_offset(nil) ==
                {:error, "Invalid offset: must be a non-negative integer"}
     end
   end

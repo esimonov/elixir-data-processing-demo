@@ -5,8 +5,8 @@ defmodule DataServer.Storage.Mongo do
 
   @behaviour DataServer.Behaviours.Storage
 
-  def find(:compacted_reading, filter \\ %{}) do
-    case Repo.all(CompactedReading, filter) do
+  def find(:compacted_reading, filter \\ %{}, opts \\ []) do
+    case Repo.all(CompactedReading, filter, map_opts(opts)) do
       {:error, %{} = err} ->
         process_error(err)
 
@@ -40,4 +40,12 @@ defmodule DataServer.Storage.Mongo do
 
   defp process_error(%{} = err),
     do: {:error, :unknown_mongo_error, err}
+
+  defp map_opts(opts) do
+    with offset <- opts[:offset] do
+      opts
+      |> Keyword.delete(:offset)
+      |> Keyword.put(:skip, offset)
+    end
+  end
 end

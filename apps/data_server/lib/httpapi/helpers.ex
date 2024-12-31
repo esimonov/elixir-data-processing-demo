@@ -8,7 +8,7 @@ defmodule DataServer.HTTPAPI.Helpers do
     do_validate_limit(limit, default_limit, max_limit)
   end
 
-  defp do_validate_limit("", default_limit, max_limit), do: {:ok, min(default_limit, max_limit)}
+  defp do_validate_limit(nil, default_limit, max_limit), do: {:ok, min(default_limit, max_limit)}
 
   defp do_validate_limit(limit, default_limit, max_limit)
        when is_binary(limit) do
@@ -21,7 +21,7 @@ defmodule DataServer.HTTPAPI.Helpers do
 
   defp do_validate_limit(_, _, _), do: {:error, "Invalid limit: must be a non-negative integer"}
 
-  def validate_offset(""), do: {:ok, 0}
+  def validate_offset(nil), do: {:ok, 0}
 
   def validate_offset(offset) when is_binary(offset) do
     case Integer.parse(offset) do
