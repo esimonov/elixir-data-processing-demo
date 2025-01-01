@@ -1,7 +1,7 @@
 defmodule DataServer.HTTPAPI.Handlers.Sensor do
   import Plug.Conn
 
-  import DataServer.HTTPAPI.Helpers, only: [validate_limit: 1, validate_offset: 1]
+  import DataServer.HTTPAPI.Pagination
 
   alias DataServer.Storage
 

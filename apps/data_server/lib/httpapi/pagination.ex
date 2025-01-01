@@ -1,4 +1,4 @@
-defmodule DataServer.HTTPAPI.Helpers do
+defmodule DataServer.HTTPAPI.Pagination do
   def validate_limit(limit, opts \\ []) do
     opts = Keyword.merge([default_limit: 10, max_limit: 20], opts)
 
