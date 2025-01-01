@@ -6,7 +6,8 @@ defmodule DataServer.Storage.Mongo do
   @behaviour DataServer.Behaviours.Storage
 
   def find(:compacted_reading, filter \\ %{}, opts \\ []) do
-    with docs <- Repo.all(CompactedReading, filter, map_opts(opts)),
+    with docs when not is_tuple(docs) <-
+           Repo.all(CompactedReading, filter, dbg(translate_opts(opts))),
          {:ok, total} <- Repo.count(CompactedReading, filter) do
       {
         :ok,
@@ -36,17 +37,33 @@ defmodule DataServer.Storage.Mongo do
     end
   end
 
+  defp translate_opts(opts) do
+    Enum.map(opts, &substitute_opt_names/1)
+  end
+
+  @name_substitutions %{
+    offset: :skip,
+    start_time: :"window.start_time"
+  }
+
+  defp substitute_opt_names({external_name, [value]}) do
+    {k, v} = substitute_opt_names(value)
+
+    {external_name, Keyword.from_keys([k], v)}
+  end
+
+  defp substitute_opt_names({external_name, value}) do
+    name = Map.get(@name_substitutions, external_name, external_name)
+
+    {name, value}
+  end
+
+  defp process_error(%Mongo.Error{message: message}),
+    do: {:error, :database_error, message}
+
   defp process_error(%{write_errors: reason}),
-    do: {:error, :mongo_write_error, reason}
+    do: {:error, :database_error, reason}
 
   defp process_error(%{} = err),
-    do: {:error, :unknown_mongo_error, err}
-
-  defp map_opts(opts) do
-    with offset <- opts[:offset] do
-      opts
-      |> Keyword.delete(:offset)
-      |> Keyword.put(:skip, offset)
-    end
-  end
+    do: {:error, :database_error, err}
 end

@@ -5,6 +5,7 @@ defmodule DataServer.HTTPAPI.Pagination do
     opts = Keyword.merge([default_limit: 10, max_limit: 20], opts)
 
     default_limit = Keyword.fetch!(opts, :default_limit)
+
     max_limit = Keyword.fetch!(opts, :max_limit)
 
     do_validate_limit(limit, default_limit, max_limit)

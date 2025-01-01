@@ -8,7 +8,7 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
   def find(conn) do
     with {:ok, limit} <- Pagination.validate_limit(conn.params["limit"]),
          {:ok, offset} <- Pagination.validate_offset(conn.params["offset"]) do
-      opts = [limit: limit, offset: offset]
+      opts = [limit: limit, offset: offset, sort: [start_time: -1]]
       filter = %{facility_id: conn.params["facility_id"]}
 
       case(Storage.find(:compacted_reading, filter, opts)) do
@@ -27,8 +27,8 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
             )
           )
 
-        {:error, _reason, _details} ->
-          send_resp(conn, 404, Jason.encode!(%{error: "Resource not found"}))
+        {:error, :database_error, _details} ->
+          send_resp(conn, 500, Jason.encode!(%{error: "Database error"}))
       end
     else
       {:error, _} ->
