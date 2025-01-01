@@ -6,21 +6,22 @@ defmodule DataServer.Storage.Mongo do
   @behaviour DataServer.Behaviours.Storage
 
   def find(:compacted_reading, filter \\ %{}, opts \\ []) do
-    case Repo.all(CompactedReading, filter, map_opts(opts)) do
+    with docs <- Repo.all(CompactedReading, filter, map_opts(opts)),
+         {:ok, total} <- Repo.count(CompactedReading, filter) do
+      {
+        :ok,
+        for(
+          doc <- docs,
+          do:
+            doc
+            |> CompactedReading.dump()
+            |> CompactedReading.after_load()
+        ),
+        total
+      }
+    else
       {:error, %{} = err} ->
         process_error(err)
-
-      res ->
-        {
-          :ok,
-          for(
-            doc <- res,
-            do:
-              doc
-              |> CompactedReading.dump()
-              |> CompactedReading.after_load()
-          )
-        }
     end
   end
 
