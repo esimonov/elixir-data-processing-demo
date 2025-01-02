@@ -6,8 +6,7 @@ defmodule DataServer.Storage.Mongo do
   @behaviour DataServer.Behaviours.Storage
 
   def find(:compacted_reading, filter \\ %{}, opts \\ []) do
-    with docs when not is_tuple(docs) <-
-           Repo.all(CompactedReading, filter, dbg(translate_opts(opts))),
+    with docs when is_list(docs) <- Repo.all(CompactedReading, filter, translate_opts(opts)),
          {:ok, total} <- Repo.count(CompactedReading, filter) do
       {
         :ok,
@@ -23,6 +22,31 @@ defmodule DataServer.Storage.Mongo do
     else
       {:error, %{} = err} ->
         process_error(err)
+    end
+  end
+
+  def get_stats(:compacted_reading, _opts \\ []) do
+    pipeline = [
+      %{
+        "$group": [
+          _id: "$facility_id",
+          stdev_pres: %{
+            "$stdDevSamp": "$avg_pressure"
+          }
+        ]
+      },
+      %{
+        "$sort": [
+          _id: 1
+        ]
+      }
+    ]
+
+    with %Mongo.Stream{} = stream <-
+           Mongo.aggregate(:mongo, CompactedReading.__collection__(:collection), pipeline) do
+      {:ok, for(doc <- stream, do: doc)}
+    else
+      {:error, %{} = err} -> process_error(err)
     end
   end
 
@@ -61,7 +85,7 @@ defmodule DataServer.Storage.Mongo do
   defp process_error(%Mongo.Error{message: message}),
     do: {:error, :database_error, message}
 
-  defp process_error(%{write_errors: reason}),
+  defp process_error(%Mongo.WriteError{write_errors: reason}),
     do: {:error, :database_error, reason}
 
   defp process_error(%{} = err),

@@ -1,4 +1,6 @@
 defmodule DataServer.HTTPAPI.Handlers.Sensor do
+  require Logger
+
   import Plug.Conn
 
   alias DataServer.HTTPAPI.Pagination
@@ -27,12 +29,35 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
             )
           )
 
-        {:error, :database_error, _details} ->
+        {:error, :database_error, details} ->
+          Logger.error(details)
+
           send_resp(conn, 500, Jason.encode!(%{error: "Database error"}))
       end
     else
       {:error, _} ->
         send_resp(conn, 500, Jason.encode!(%{error: "Internal server error"}))
+    end
+  end
+
+  def get_stats(conn) do
+    case(Storage.get_stats(:compacted_reading)) do
+      {:ok, stats} ->
+        send_resp(
+          conn,
+          200,
+          Jason.encode!(
+            %{
+              data: stats
+            },
+            pretty: true
+          )
+        )
+
+      {:error, :database_error, details} ->
+        Logger.error(details)
+
+        send_resp(conn, 500, Jason.encode!(%{error: "Database error"}))
     end
   end
 end
