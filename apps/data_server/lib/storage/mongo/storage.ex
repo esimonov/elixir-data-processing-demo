@@ -21,20 +21,9 @@ defmodule DataServer.Storage.Mongo do
   def find(:compacted_reading, filter \\ %{}, opts \\ []) do
     with docs when is_list(docs) <- Repo.all(CompactedReading, filter, translate_opts(opts)),
          {:ok, total} <- Repo.count(CompactedReading, filter) do
-      {
-        :ok,
-        for(
-          doc <- docs,
-          do:
-            doc
-            |> CompactedReading.dump()
-            |> CompactedReading.after_load()
-        ),
-        total
-      }
+      {:ok, Enum.map(docs, &process_document/1), total}
     else
-      {:error, %{} = err} ->
-        process_error(err)
+      {:error, %{} = err} -> process_error(err)
     end
   end
 
@@ -85,16 +74,19 @@ defmodule DataServer.Storage.Mongo do
     field_names = validate_stats_field_names(requested_field_names)
 
     group =
-      for name <- field_names,
-          reduce: [_id: "$facility_id"] do
-        acc ->
+      Enum.reduce(
+        field_names,
+        [_id: "$facility_id"],
+        fn name, acc ->
           [{:"stdev_#{name}", %{"$stdDevSamp": "$avg_#{name}"}} | acc]
-      end
+        end
+      )
 
     project =
-      for name <- field_names do
-        {name, [stdev: "$stdev_#{name}"]}
-      end
+      Enum.map(
+        field_names,
+        fn name -> {name, [stdev: "$stdev_#{name}"]} end
+      )
 
     [
       %{"$group": group},
@@ -110,6 +102,12 @@ defmodule DataServer.Storage.Mongo do
       [] -> @allowed_field_names
       filtered -> filtered
     end
+  end
+
+  defp process_document(doc) do
+    doc
+    |> CompactedReading.dump()
+    |> CompactedReading.after_load()
   end
 
   defp process_error(%Mongo.Error{message: message}),
