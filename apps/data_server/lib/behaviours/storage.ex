@@ -4,15 +4,17 @@ defmodule DataServer.Behaviours.Storage do
   @type filter :: map()
   @type reason :: atom()
   @type details :: map()
+  @type sensors :: [String.t()]
+  @type sensor_stats :: [map()]
   @type total :: non_neg_integer()
 
   @callback insert_one(document, document_type) ::
               {:ok, document()}
-              | {:error, reason}
               | {:error, reason, details}
 
   @callback find(document_type, filter) ::
               {:ok, [document()], total()}
-              | {:error, reason}
               | {:error, reason, details}
+
+  @callback get_stats(document_type, sensors) :: {:ok, sensor_stats} | {:error, reason, details}
 end

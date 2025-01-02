@@ -1,10 +1,23 @@
 defmodule DataServer.Storage.Mongo do
-  alias Storage.Mongo.CompactedReading
+  @moduledoc """
+  A module for interacting with MongoDB.
 
-  alias DataServer.Storage.Mongo.Repo
+  Implements the `DataServer.Behaviours.Storage` behaviour.
+
+
+  ## Options
+
+  The module provides support for translating external options (e.g., `:offset`, `:start_time`) into the internal format.
+
+  ## Error Handling
+
+  All database errors are standardized into a `{:error, :database_error, reason}` tuple.
+  """
+  alias DataServer.Storage.Mongo.{Repo, CompactedReading}
 
   @behaviour DataServer.Behaviours.Storage
 
+  @impl true
   def find(:compacted_reading, filter \\ %{}, opts \\ []) do
     with docs when is_list(docs) <- Repo.all(CompactedReading, filter, translate_opts(opts)),
          {:ok, total} <- Repo.count(CompactedReading, filter) do
@@ -25,17 +38,17 @@ defmodule DataServer.Storage.Mongo do
     end
   end
 
+  @impl true
   def get_stats(:compacted_reading, sensors) do
     pipeline = construct_stats_pipeline(sensors)
 
-    with %Mongo.Stream{} = stream <-
-           Mongo.aggregate(:mongo, CompactedReading.__collection__(:collection), pipeline) do
-      {:ok, for(doc <- stream, do: doc)}
-    else
+    case Mongo.aggregate(:mongo, CompactedReading.__collection__(:collection), pipeline) do
+      %Mongo.Stream{} = stream -> {:ok, for(doc <- stream, do: doc)}
       {:error, %{} = err} -> process_error(err)
     end
   end
 
+  @impl true
   def insert_one(map, :compacted_reading) do
     IO.puts("Saving to Database! #{inspect(map)}")
 

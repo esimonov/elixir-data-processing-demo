@@ -1,4 +1,4 @@
-defmodule Storage.Mongo.Window do
+defmodule DataServer.Storage.Mongo.Window do
   use Mongo.Collection
 
   require Logger
@@ -9,9 +9,11 @@ defmodule Storage.Mongo.Window do
   end
 end
 
-defmodule Storage.Mongo.CompactedReading do
+defmodule DataServer.Storage.Mongo.CompactedReading do
   require Logger
   use Mongo.Collection
+
+  alias DataServer.Storage.Mongo.{CompactedReading, Window}
 
   @coll_name Application.compile_env(:data_server, :compacted_readings_coll_name)
 
@@ -28,11 +30,11 @@ defmodule Storage.Mongo.CompactedReading do
     attribute(:min_humidity, float())
     attribute(:min_temperature, float())
     attribute(:min_pressure, float())
-    embeds_one(:window, Storage.Mongo.Window, default: &Storage.Mongo.Window.new/0)
+    embeds_one(:window, Window, default: &Window.new/0)
     attribute(:received_at, DateTime.t(), default: &DateTime.utc_now/0)
 
-    after_load(&Storage.Mongo.CompactedReading.after_load/1)
-    before_dump(&Storage.Mongo.CompactedReading.before_dump/1)
+    after_load(&CompactedReading.after_load/1)
+    before_dump(&CompactedReading.before_dump/1)
   end
 
   def new(%{} = map) do
@@ -41,15 +43,10 @@ defmodule Storage.Mongo.CompactedReading do
     |> after_load()
   end
 
-  def after_load(%Storage.Mongo.CompactedReading{_id: id} = doc) do
-    %Storage.Mongo.CompactedReading{doc | id: BSON.ObjectId.encode!(id)}
-  end
+  def after_load(%CompactedReading{_id: id} = doc),
+    do: %CompactedReading{doc | id: BSON.ObjectId.encode!(id)}
 
-  def after_load(%{} = doc) do
-    Map.drop(doc, ["_id"])
-  end
+  def after_load(%{} = doc), do: Map.drop(doc, ["_id"])
 
-  def before_dump(%Storage.Mongo.CompactedReading{} = doc) do
-    %Storage.Mongo.CompactedReading{doc | id: nil}
-  end
+  def before_dump(%CompactedReading{} = doc), do: %CompactedReading{doc | id: nil}
 end

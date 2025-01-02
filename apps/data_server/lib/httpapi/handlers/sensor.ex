@@ -49,16 +49,7 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
 
     case Storage.get_stats(:compacted_reading, sensors) do
       {:ok, stats} ->
-        send_resp(
-          conn,
-          200,
-          Jason.encode!(
-            %{
-              data: stats
-            },
-            pretty: true
-          )
-        )
+        send_resp(conn, 200, Jason.encode!(stats, pretty: true))
 
       {:error, :database_error, details} ->
         Logger.error(details)

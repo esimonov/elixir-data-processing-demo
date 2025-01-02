@@ -11,6 +11,10 @@ defmodule DataServer.HTTPAPI.PaginationTest do
       assert Pagination.validate_limit(nil) == {:ok, 10}
     end
 
+    test "returns default limit when input is empty string" do
+      assert Pagination.validate_limit("") == {:ok, 10}
+    end
+
     test "returns parsed limit when input is within the max limit" do
       assert Pagination.validate_limit("5") == {:ok, 5}
     end
@@ -42,6 +46,11 @@ defmodule DataServer.HTTPAPI.PaginationTest do
 
     test "returns 0 for nil offset" do
       assert Pagination.validate_offset(nil) ==
+               {:ok, 0}
+    end
+
+    test "returns 0 for empty string offset" do
+      assert Pagination.validate_offset("") ==
                {:ok, 0}
     end
 
