@@ -25,12 +25,20 @@ defmodule DataServer.HTTPAPI.PaginationTest do
 
     test "returns error for negative limit" do
       assert Pagination.validate_limit("-5") ==
-               {:error, "Invalid limit: must be a positive integer"}
+               {
+                 :error,
+                 :validation_error,
+                 "Invalid limit: must be a non-negative integer; got '-5'"
+               }
     end
 
     test "returns error for non-integer limit" do
       assert Pagination.validate_limit("abc") ==
-               {:error, "Invalid limit: must be a positive integer"}
+               {
+                 :error,
+                 :validation_error,
+                 "Invalid limit: must be a non-negative integer; got 'abc'"
+               }
     end
 
     test "allows custom default and max limits" do
@@ -56,12 +64,20 @@ defmodule DataServer.HTTPAPI.PaginationTest do
 
     test "returns error for negative offset" do
       assert Pagination.validate_offset("-1") ==
-               {:error, "Invalid offset: must be a non-negative integer"}
+               {
+                 :error,
+                 :validation_error,
+                 "Invalid offset: must be a non-negative integer; got '-1'"
+               }
     end
 
     test "returns error for non-integer offset" do
       assert Pagination.validate_offset("abc") ==
-               {:error, "Invalid offset: must be a non-negative integer"}
+               {
+                 :error,
+                 :validation_error,
+                 "Invalid offset: must be a non-negative integer; got 'abc'"
+               }
     end
   end
 end

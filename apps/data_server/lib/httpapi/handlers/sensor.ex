@@ -35,8 +35,8 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
           send_resp(conn, 500, Jason.encode!(%{error: "Database error"}))
       end
     else
-      {:error, _} ->
-        send_resp(conn, 500, Jason.encode!(%{error: "Internal server error"}))
+      {:error, :validation_error, details} ->
+        send_resp(conn, 400, Jason.encode!(%{error: details}, pretty: true))
     end
   end
 

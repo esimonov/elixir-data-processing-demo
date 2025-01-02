@@ -18,6 +18,8 @@ defmodule DataServer.HTTPAPI.Pagination do
   @default_limit 10
   @max_limit 20
 
+  @validation_error_template "Invalid %{param}: must be a non-negative integer; got '%{value}'"
+
   defstruct [:limit, :offset, :total]
 
   @doc """
@@ -43,7 +45,7 @@ defmodule DataServer.HTTPAPI.Pagination do
 
     max_limit = Keyword.fetch!(opts, :max_limit)
 
-    do_validate_limit(limit, default_limit, max_limit)
+    validate_param(limit, "limit", default_limit, max_limit)
   end
 
   @doc """
@@ -58,33 +60,32 @@ defmodule DataServer.HTTPAPI.Pagination do
   - `{:ok, offset}` - If the `offset` is valid and normalized.
   - `{:error, reason}` - If the `offset` is invalid.
   """
-  def validate_offset(offset) do
-    cond do
-      offset in [nil, ""] ->
-        {:ok, 0}
+  def validate_offset(offset), do: validate_param(offset, "offset", 0)
 
-      is_binary(offset) ->
-        case Integer.parse(offset) do
-          {value, ""} when value >= 0 -> {:ok, value}
-          _ -> {:error, "Invalid offset: must be a non-negative integer"}
+  defp validate_param(param, param_name, default_value, max_value \\ nil) do
+    cond do
+      param in [nil, ""] ->
+        {:ok, min(default_value, max_value)}
+
+      is_binary(param) ->
+        case Integer.parse(param) do
+          {0, ""} -> {:ok, min(default_value, max_value)}
+          {value, ""} when value > 0 -> {:ok, min(value, max_value)}
+          _ -> format_error(param_name, param)
         end
 
       true ->
-        {:error, "Invalid offset: must be a non-negative integer"}
+        format_error(param_name, param)
     end
   end
 
-  defp do_validate_limit(limit, default_limit, max_limit) when limit in [nil, ""],
-    do: {:ok, min(default_limit, max_limit)}
-
-  defp do_validate_limit(limit, default_limit, max_limit)
-       when is_binary(limit) do
-    case Integer.parse(limit) do
-      {0, ""} -> {:ok, default_limit}
-      {value, ""} when value > 0 -> {:ok, min(value, max_limit)}
-      _ -> {:error, "Invalid limit: must be a positive integer"}
-    end
+  defp format_error(param_name, param) do
+    {
+      :error,
+      :validation_error,
+      @validation_error_template
+      |> String.replace("%{param}", param_name)
+      |> String.replace("%{value}", param)
+    }
   end
-
-  defp do_validate_limit(_, _, _), do: {:error, "Invalid limit: must be a non-negative integer"}
 end
