@@ -46,6 +46,34 @@ defmodule DataServer.HTTPAPI.Pagination do
     do_validate_limit(limit, default_limit, max_limit)
   end
 
+  @doc """
+  Validates and normalizes the `offset` parameter.
+
+  ## Parameters
+
+  - `offset` - The raw `offset` value from query parameters.
+
+  ## Returns
+
+  - `{:ok, offset}` - If the `offset` is valid and normalized.
+  - `{:error, reason}` - If the `offset` is invalid.
+  """
+  def validate_offset(offset) do
+    cond do
+      offset in [nil, ""] ->
+        {:ok, 0}
+
+      is_binary(offset) ->
+        case Integer.parse(offset) do
+          {value, ""} when value >= 0 -> {:ok, value}
+          _ -> {:error, "Invalid offset: must be a non-negative integer"}
+        end
+
+      true ->
+        {:error, "Invalid offset: must be a non-negative integer"}
+    end
+  end
+
   defp do_validate_limit(limit, default_limit, max_limit) when limit in [nil, ""],
     do: {:ok, min(default_limit, max_limit)}
 
@@ -59,27 +87,4 @@ defmodule DataServer.HTTPAPI.Pagination do
   end
 
   defp do_validate_limit(_, _, _), do: {:error, "Invalid limit: must be a non-negative integer"}
-
-  def validate_offset(offset) when offset in [nil, ""], do: {:ok, 0}
-
-  @doc """
-  Validates and normalizes the `offset` parameter.
-
-  ## Parameters
-
-  - `offset` - The raw `offset` value from query parameters.
-
-  ## Returns
-
-  - `{:ok, offset}` - If the `offset` is valid and normalized.
-  - `{:error, reason}` - If the `offset` is invalid.
-  """
-  def validate_offset(offset) when is_binary(offset) do
-    case Integer.parse(offset) do
-      {value, ""} when value >= 0 -> {:ok, value}
-      _ -> {:error, "Invalid offset: must be a non-negative integer"}
-    end
-  end
-
-  def validate_offset(_), do: {:error, "Invalid offset: must be a non-negative integer"}
 end
