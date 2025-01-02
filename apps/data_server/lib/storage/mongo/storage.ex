@@ -26,21 +26,7 @@ defmodule DataServer.Storage.Mongo do
   end
 
   def get_stats(:compacted_reading, _opts \\ []) do
-    pipeline = [
-      %{
-        "$group": [
-          _id: "$facility_id",
-          stdev_pres: %{
-            "$stdDevSamp": "$avg_pressure"
-          }
-        ]
-      },
-      %{
-        "$sort": [
-          _id: 1
-        ]
-      }
-    ]
+    pipeline = construct_stats_pipeline()
 
     with %Mongo.Stream{} = stream <-
            Mongo.aggregate(:mongo, CompactedReading.__collection__(:collection), pipeline) do
@@ -80,6 +66,30 @@ defmodule DataServer.Storage.Mongo do
     name = Map.get(@name_substitutions, external_name, external_name)
 
     {name, value}
+  end
+
+  defp construct_stats_pipeline(field_names \\ ["pressure"]) do
+    group =
+      for name <- field_names,
+          reduce: [_id: "$facility_id"] do
+        acc ->
+          [{:"stdev_#{name}", %{"$stdDevSamp": "$avg_#{name}"}} | acc]
+      end
+
+    project =
+      for name <- field_names do
+        {name, [stdev: "$stdev_#{name}"]}
+      end
+
+    [
+      %{"$group": group},
+      %{"$project": project},
+      %{
+        "$sort": [
+          _id: 1
+        ]
+      }
+    ]
   end
 
   defp process_error(%Mongo.Error{message: message}),
