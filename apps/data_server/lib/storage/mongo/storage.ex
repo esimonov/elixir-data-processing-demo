@@ -25,8 +25,8 @@ defmodule DataServer.Storage.Mongo do
     end
   end
 
-  def get_stats(:compacted_reading, _opts \\ []) do
-    pipeline = construct_stats_pipeline()
+  def get_stats(:compacted_reading, sensors) do
+    pipeline = construct_stats_pipeline(sensors)
 
     with %Mongo.Stream{} = stream <-
            Mongo.aggregate(:mongo, CompactedReading.__collection__(:collection), pipeline) do
@@ -68,7 +68,9 @@ defmodule DataServer.Storage.Mongo do
     {name, value}
   end
 
-  defp construct_stats_pipeline(field_names \\ ["pressure"]) do
+  defp construct_stats_pipeline(requested_field_names) do
+    field_names = validate_stats_field_names(requested_field_names)
+
     group =
       for name <- field_names,
           reduce: [_id: "$facility_id"] do
@@ -84,12 +86,17 @@ defmodule DataServer.Storage.Mongo do
     [
       %{"$group": group},
       %{"$project": project},
-      %{
-        "$sort": [
-          _id: 1
-        ]
-      }
+      %{"$sort": [_id: 1]}
     ]
+  end
+
+  @allowed_field_names ~w(humidity pressure temperature)
+
+  defp validate_stats_field_names(values) do
+    case Enum.filter(values, &(&1 in @allowed_field_names)) do
+      [] -> @allowed_field_names
+      filtered -> filtered
+    end
   end
 
   defp process_error(%Mongo.Error{message: message}),

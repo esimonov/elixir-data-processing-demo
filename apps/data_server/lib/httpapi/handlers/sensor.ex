@@ -41,7 +41,13 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
   end
 
   def get_stats(conn) do
-    case(Storage.get_stats(:compacted_reading)) do
+    sensors =
+      conn.params
+      |> Map.get("sensors", "")
+      |> String.split(",", trim: true)
+      |> Enum.reject(&(&1 == ""))
+
+    case Storage.get_stats(:compacted_reading, sensors) do
       {:ok, stats} ->
         send_resp(
           conn,
