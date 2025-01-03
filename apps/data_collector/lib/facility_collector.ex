@@ -41,8 +41,10 @@ defmodule FacilityCollector do
     {:noreply, reset_state(facility_id)}
   end
 
-  defp update_readings_state(state, sensor_name, value) do
-    IO.puts("Sensor: #{sensor_name}, val: #{value}")
+  defp update_readings_state(%{facility_id: facility_id} = state, sensor_name, value) do
+    Logger.debug(
+      "Updating readings state: #{sensor_name}, facility: #{facility_id}, value: #{value}"
+    )
 
     sensor_state =
       Map.get(

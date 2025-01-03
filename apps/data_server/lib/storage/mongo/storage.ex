@@ -13,6 +13,7 @@ defmodule DataServer.Storage.Mongo do
 
   All database errors are standardized into a `{:error, :database_error, reason}` tuple.
   """
+  require Logger
   alias DataServer.Storage.Mongo.{Repo, CompactedReading}
 
   @behaviour DataServer.Behaviours.Storage
@@ -39,7 +40,7 @@ defmodule DataServer.Storage.Mongo do
 
   @impl true
   def insert_one(:compacted_reading, reading) do
-    IO.puts("Saving to Database! #{inspect(reading)}")
+    Logger.debug("Inserting to database: #{inspect(reading)}")
 
     doc = CompactedReading.new(reading)
 

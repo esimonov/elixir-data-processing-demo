@@ -1,19 +1,7 @@
 defmodule DataCollector do
   use GenServer
 
-  @moduledoc """
-  Documentation for `DataCollector`.
-  """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> DataCollector.hello()
-      :world
-
-  """
+  require Logger
 
   @sensor_names [
     "humidity",
@@ -41,7 +29,7 @@ defmodule DataCollector do
       end
     )
 
-    IO.puts("Collector subscribed")
+    Logger.info("Collector subscribed")
 
     {:noreply, state}
   end
@@ -60,7 +48,7 @@ defmodule DataCollector do
         route_message(facility_id, sensor_name, %{ts: ts, val: value})
 
       {:error, reason} ->
-        IO.puts("Error! #{reason}")
+        Logger.error("Validating sensor reading: #{reason}")
     end
 
     {:noreply, state}
@@ -83,7 +71,7 @@ defmodule DataCollector do
   defp validate_sensor_reading(json_string) do
     case Jason.decode(json_string) do
       {:ok, %{"ts" => ts, "val" => value}} -> {:ok, %{ts: ts, val: value}}
-      _ -> {:error, "Could not decode JSON"}
+      {:error, error} -> {:error, Jason.DecodeError.message(error)}
     end
   end
 
