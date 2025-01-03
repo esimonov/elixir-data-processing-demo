@@ -1,4 +1,5 @@
 defmodule DataServer.Storage.Mongo.Window do
+  @moduledoc false
   use Mongo.Collection
 
   require Logger
@@ -10,6 +11,8 @@ defmodule DataServer.Storage.Mongo.Window do
 end
 
 defmodule DataServer.Storage.Mongo.CompactedReading do
+  @moduledoc false
+
   require Logger
   use Mongo.Collection
 

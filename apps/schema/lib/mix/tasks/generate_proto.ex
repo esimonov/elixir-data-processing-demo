@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.GenerateProto do
+  @moduledoc false
+
   use Mix.Task
 
   @shortdoc "Compiles Protobuf schemas in the proto/ directory to Elixir modules."

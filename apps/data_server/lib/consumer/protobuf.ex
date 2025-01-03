@@ -1,4 +1,8 @@
 defmodule DataServer.Consumer.Protobuf do
+  @moduledoc """
+  Provides utility functions for decoding Protobuf data into Elixir maps.
+  """
+
   def decode_map(%Schema.CompactedReading{window: window} = doc) do
     case from_protobuf_interval(window) do
       {:ok, interval} ->
