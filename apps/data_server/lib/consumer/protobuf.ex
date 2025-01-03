@@ -1,14 +1,16 @@
 defmodule DataServer.Consumer.Protobuf do
   def decode_map(%Schema.CompactedReading{window: window} = doc) do
-    with {:ok, interval_map} <- from_protobuf_interval(window) do
-      map =
-        doc
-        |> Map.from_struct()
-        |> Map.merge(%{window: interval_map})
+    case from_protobuf_interval(window) do
+      {:ok, interval} ->
+        map =
+          doc
+          |> Map.from_struct()
+          |> Map.merge(%{window: interval})
 
-      {:ok, map}
-    else
-      error -> error
+        {:ok, map}
+
+      error ->
+        error
     end
   end
 
