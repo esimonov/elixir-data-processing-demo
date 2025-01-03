@@ -1,5 +1,27 @@
 defmodule DataGenerator do
+  @moduledoc """
+  A GenServer-based data generator for simulating sensor readings across multiple facilities.
+
+  This module generates synthetic readings for sensors like humidity, pressure, and temperature,
+  publishing them to MQTT topics at regular intervals.
+
+  The sensor readings are normally distributed random values with μs hardcoded as module attributes,
+  and σ²s directly proportional to the ordinal number of the facility, e.g
+  the higher the number of the facility, the more variance its sensor readings show.
+
+  The topics names are in the form of "sensor_readings/{facility_name}/{sensor_name}".
+  E.g, "sensor_readings/facility_2/pressure" is a topic for pressure readings from facility_2.
+
+  The number of facilities and reporting interval can be configured through application environment variables.
+
+  ## Configuration
+
+  - `:num_facilities` - The total number of facilities to simulate.
+  - `:reporting_interval` - Time interval between sensor reading simulations.
+  """
   use GenServer
+
+  require Logger
 
   @sensors [
     %{name: "humidity", mean: 50},
@@ -13,7 +35,7 @@ defmodule DataGenerator do
   @num_facilities Application.compile_env!(:data_generator, :num_facilities)
 
   def start(_type, _args) do
-    IO.puts("Starting Data Generator")
+    Logger.info("Starting Data Generator")
 
     DataGenerator.start_link([])
   end
@@ -64,7 +86,12 @@ defmodule DataGenerator do
         end
       )
     end)
-    |> Task.async_stream(fn {topic_name, payload} -> :emqtt.publish(pid, topic_name, payload) end)
+    |> Task.async_stream(fn {topic_name, payload} ->
+      case :emqtt.publish(pid, topic_name, payload) do
+        :ok -> :ok
+        {:error, reason} -> Logger.error("Failed to publish to #{topic_name}: #{inspect(reason)}")
+      end
+    end)
     |> Stream.run()
   end
 
