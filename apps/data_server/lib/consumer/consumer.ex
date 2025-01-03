@@ -20,16 +20,10 @@ defmodule DataServer.Consumer do
     decoded =
       data
       |> Schema.CompactedReading.decode()
-      |> decode_protobuf()
+      |> Protobuf.decode_map()
 
     Storage.insert_one(:compacted_reading, decoded)
 
     message
-  end
-
-  defp decode_protobuf(%Schema.CompactedReading{window: window} = doc) do
-    doc
-    |> Map.from_struct()
-    |> Map.merge(%{window: Protobuf.from_protobuf_interval(window)})
   end
 end
