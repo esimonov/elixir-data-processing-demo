@@ -67,6 +67,14 @@ defmodule DataGenerator do
     {:noreply, set_timer(state)}
   end
 
+  def terminate(_reason, %{pid: pid}) do
+    :emqtt.disconnect(pid)
+
+    Logger.info("Data generator disconnected")
+
+    :ok
+  end
+
   defp set_timer(%{reporting_interval: reporting_interval} = state) do
     timer = Process.send_after(self(), :tick, to_timeout(reporting_interval))
 
