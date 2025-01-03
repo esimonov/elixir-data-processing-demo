@@ -8,6 +8,8 @@ defmodule DataServer.Consumer do
   """
   use Broadway
 
+  require Logger
+
   alias DataServer.Storage
 
   alias DataServer.Consumer.Protobuf
@@ -17,12 +19,17 @@ defmodule DataServer.Consumer do
   end
 
   def handle_message(_, %Broadway.Message{data: data} = message, _context) do
-    decoded =
-      data
-      |> Schema.CompactedReading.decode()
-      |> Protobuf.decode_map()
+    with decoded_struct <- Schema.CompactedReading.decode(data),
+         {:ok, decoded_map} <- Protobuf.decode_map(decoded_struct),
+         {:ok, _} <- Storage.insert_one(:compacted_reading, decoded_map) do
+      message
+    else
+      {:error, :invalid_data, details} ->
+        Logger.error("Invalid protobuf data: #{details}")
 
-    Storage.insert_one(:compacted_reading, decoded)
+      {:error, :database_error, details} ->
+        Logger.error("Database error: #{details}")
+    end
 
     message
   end
