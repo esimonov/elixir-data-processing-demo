@@ -8,7 +8,7 @@ defmodule DataServer.Behaviours.Storage do
   @type sensor_stats :: [map()]
   @type total :: non_neg_integer()
 
-  @callback insert_one(document, document_type) ::
+  @callback insert_one(document_type, document) ::
               {:ok, document()}
               | {:error, reason, details}
 

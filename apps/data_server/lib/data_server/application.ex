@@ -8,8 +8,11 @@ defmodule DataServer.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {Mongo, DataServer.Storage.Mongo.Repo.config()},
-      DataServer.KafkaConsumer,
+      {
+        Mongo,
+        DataServer.Storage.Mongo.Repo.config()
+      },
+      DataServer.Consumer,
       {
         Plug.Cowboy,
         scheme: :http,

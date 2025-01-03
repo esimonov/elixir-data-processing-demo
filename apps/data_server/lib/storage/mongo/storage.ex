@@ -38,10 +38,10 @@ defmodule DataServer.Storage.Mongo do
   end
 
   @impl true
-  def insert_one(map, :compacted_reading) do
-    IO.puts("Saving to Database! #{inspect(map)}")
+  def insert_one(:compacted_reading, reading) do
+    IO.puts("Saving to Database! #{inspect(reading)}")
 
-    doc = CompactedReading.new(map)
+    doc = CompactedReading.new(reading)
 
     case Repo.insert(doc) do
       {:ok, res} -> {:ok, res}
@@ -49,9 +49,7 @@ defmodule DataServer.Storage.Mongo do
     end
   end
 
-  defp translate_opts(opts) do
-    Enum.map(opts, &substitute_opt_names/1)
-  end
+  defp translate_opts(opts), do: Enum.map(opts, &substitute_opt_names/1)
 
   @name_substitutions %{
     offset: :skip,

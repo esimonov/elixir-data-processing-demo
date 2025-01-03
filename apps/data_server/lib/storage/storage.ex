@@ -5,5 +5,5 @@ defmodule DataServer.Storage do
 
   defdelegate find(document_type, filter, opts \\ []), to: @target
   defdelegate get_stats(document_type, opts \\ []), to: @target
-  defdelegate insert_one(document, document_type), to: @target
+  defdelegate insert_one(document_type, document), to: @target
 end
