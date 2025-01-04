@@ -1,4 +1,8 @@
 defmodule DataCollector.KafkaProducer do
+  @moduledoc """
+  Module responsible for producing messages to Kafka.
+  """
+
   use Supervisor
 
   alias Schema.Helpers.Encoder
