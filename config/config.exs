@@ -25,7 +25,7 @@ config :data_collector, :emqtt,
 config :data_collector, :kafka_producer,
   brokers: [{"localhost", 9092}],
   topic: "compacted_sensor_readings",
-  sasl: {:plain, "kafkauser", "kafkapassword"}
+  sasl: {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
 
 config :data_collector,
   compaction_interval: Duration.new!(second: 10)
@@ -51,7 +51,7 @@ config :data_server, :broadway,
          group_id: "data_server_group",
          topics: ["compacted_sensor_readings"],
          client_config: [
-           sasl: {:plain, "kafkauser", "kafkapassword"}
+           sasl: {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
          ]
        ]},
     concurrency: 1
@@ -69,8 +69,8 @@ config :data_server, DataServer.Storage.Mongo.Repo,
   timeout: 60_000,
   idle_interval: 10_000,
   queue_target: 5_000,
-  username: "admin",
-  password: "password",
+  username: System.get_env("MONGO_USER"),
+  password: System.get_env("MONGO_PASSWORD"),
   auth_source: "admin"
 
 Logger.put_module_level(:emqtt, :error)
