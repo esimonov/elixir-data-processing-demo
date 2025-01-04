@@ -5,13 +5,12 @@ defmodule DataServer.Application do
 
   use Application
 
+  alias DataServer.Storage.Mongo.Repo
+
   @impl true
   def start(_type, _args) do
     children = [
-      {
-        Mongo,
-        DataServer.Storage.Mongo.Repo.config()
-      },
+      {Mongo, Repo.config()},
       DataServer.Consumer,
       {
         Plug.Cowboy,

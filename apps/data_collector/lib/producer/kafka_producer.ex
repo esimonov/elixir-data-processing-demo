@@ -24,18 +24,16 @@ defmodule DataCollector.KafkaProducer do
   end
 
   def produce(%{facility_id: facility_id} = doc) do
-    try do
-      :ok =
-        :brod.produce_sync(
-          :brod_client,
-          Keyword.get(@kafka_config, :topic),
-          :hash,
-          facility_id,
-          encode_protobuf(doc)
-        )
-    rescue
-      e -> {:error, e}
-    end
+    :ok =
+      :brod.produce_sync(
+        :brod_client,
+        Keyword.get(@kafka_config, :topic),
+        :hash,
+        facility_id,
+        encode_protobuf(doc)
+      )
+  rescue
+    e -> {:error, e}
   end
 
   defp encode_protobuf(%{} = doc) do

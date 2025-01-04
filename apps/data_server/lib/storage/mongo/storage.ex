@@ -14,7 +14,7 @@ defmodule DataServer.Storage.Mongo do
   All database errors are standardized into a `{:error, :database_error, reason}` tuple.
   """
   require Logger
-  alias DataServer.Storage.Mongo.{Repo, CompactedReading}
+  alias DataServer.Storage.Mongo.{CompactedReading, Repo}
 
   @behaviour DataServer.Behaviours.Storage
 
@@ -109,12 +109,12 @@ defmodule DataServer.Storage.Mongo do
     |> CompactedReading.after_load()
   end
 
-  defp process_error(%Mongo.Error{message: message}),
-    do: {:error, :database_error, message}
+  defp process_error(%Mongo.Error{} = err),
+    do: {:error, :database_error, Mongo.Error.message(err)}
 
-  defp process_error(%Mongo.WriteError{write_errors: reason}),
-    do: {:error, :database_error, reason}
+  defp process_error(%Mongo.WriteError{} = err),
+    do: {:error, :database_error, Mongo.WriteError.message(err)}
 
-  defp process_error(%{} = err),
-    do: {:error, :database_error, err}
+  defp process_error(err),
+    do: {:error, :database_error, inspect(err)}
 end
