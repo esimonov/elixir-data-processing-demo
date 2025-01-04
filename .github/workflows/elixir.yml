@@ -39,7 +39,6 @@ jobs:
           key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{hashFiles('**/mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-${{ env.cache-name }}-
 
-
       - name: Install deps
         run: mix deps.get
 
