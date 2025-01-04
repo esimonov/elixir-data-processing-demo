@@ -1,4 +1,4 @@
-defmodule Schema.Helpers.Protobuf do
+defmodule Schema.Helpers.Decoder do
   @moduledoc """
   Provides utility functions for decoding Protobuf data into Elixir maps.
   """

@@ -1,7 +1,7 @@
-defmodule Schema.Helpers.ProtobufTest do
+defmodule Schema.Helpers.DecoderTest do
   use ExUnit.Case, async: true
 
-  alias Schema.Helpers.Protobuf
+  alias Schema.Helpers.Decoder
 
   describe "decode_map/1" do
     test "decodes Schema.CompactedReading" do
@@ -22,7 +22,7 @@ defmodule Schema.Helpers.ProtobufTest do
             end_time: %Google.Protobuf.Timestamp{seconds: 1_607_999_999, nanos: 500_000}
           }
         }
-        |> Protobuf.decode_map()
+        |> Decoder.decode_map()
 
       assert result ==
                {
@@ -48,7 +48,7 @@ defmodule Schema.Helpers.ProtobufTest do
     end
 
     test "returns error for unknown type" do
-      result = Protobuf.decode_map("string")
+      result = Decoder.decode_map("string")
 
       assert result == {:error, :invalid_data, "\"string\""}
     end
@@ -61,7 +61,7 @@ defmodule Schema.Helpers.ProtobufTest do
         end_time: %Google.Protobuf.Timestamp{seconds: 1_607_999_999, nanos: 500_000}
       }
 
-      result = Protobuf.from_protobuf_interval(interval)
+      result = Decoder.from_protobuf_interval(interval)
 
       assert result ==
                {
@@ -74,7 +74,7 @@ defmodule Schema.Helpers.ProtobufTest do
     end
 
     test "returns error for invalid interval" do
-      result = Protobuf.from_protobuf_interval(nil)
+      result = Decoder.from_protobuf_interval(nil)
 
       assert result == {:error, :invalid_data, "nil"}
     end
@@ -84,7 +84,7 @@ defmodule Schema.Helpers.ProtobufTest do
     test "converts valid Protobuf timestamp" do
       timestamp = %Google.Protobuf.Timestamp{seconds: 1_607_999_999, nanos: 500_000}
 
-      result = Protobuf.from_protobuf_timestamp(timestamp)
+      result = Decoder.from_protobuf_timestamp(timestamp)
 
       expected_dt =
         DateTime.from_unix!(1_607_999_999)
@@ -94,7 +94,7 @@ defmodule Schema.Helpers.ProtobufTest do
     end
 
     test "returns error for invalid timestamp" do
-      result = Protobuf.from_protobuf_timestamp(nil)
+      result = Decoder.from_protobuf_timestamp(nil)
 
       assert result == {:error, :invalid_data, "nil"}
     end
