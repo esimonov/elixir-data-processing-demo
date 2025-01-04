@@ -55,4 +55,4 @@ jobs:
         run: mix credo --strict
 
       - name: Run tests
-        run: source .env.local && mix test --trace
+        run: export $(cat .env.local | xargs) && mix test --trace

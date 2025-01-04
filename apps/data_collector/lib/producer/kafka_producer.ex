@@ -16,7 +16,7 @@ defmodule DataCollector.KafkaProducer do
   def init(_) do
     config = Application.fetch_env!(:data_collector, :kafka_producer)
 
-    :ets.new(@table, [:named_table, :public, read_concurrency: true])
+    :ets.new(@table, [:named_table, :private, read_concurrency: true])
     :ets.insert(@table, {:config, config})
 
     :ok =
