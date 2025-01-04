@@ -1,7 +1,10 @@
 defmodule DataServer.HTTPAPI.Handlers.Sensor do
+  @moduledoc """
+  The module provides HTTP request handlers for managing and querying sensor data.
+  """
   require Logger
 
-  import Plug.Conn
+  import DataServer.HTTPAPI.JSON
 
   alias DataServer.HTTPAPI.Pagination
 
@@ -15,28 +18,22 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
 
       case(Storage.find(:compacted_reading, filter, opts)) do
         {:ok, readings, total} ->
-          send_resp(
+          send_json_with_pagination(
             conn,
-            200,
-            Jason.encode!(
-              %{
-                data: readings,
-                pagination:
-                  %Pagination{limit: limit, offset: offset, total: total}
-                  |> Map.from_struct()
-              },
-              pretty: true
-            )
+            readings,
+            %Pagination{
+              limit: limit,
+              offset: offset,
+              total: total
+            }
           )
 
         {:error, :database_error, details} ->
-          Logger.error(details)
-
-          send_resp(conn, 500, Jason.encode!(%{error: "Database error"}))
+          send_internal_server_error(conn, details)
       end
     else
       {:error, :validation_error, details} ->
-        send_resp(conn, 400, Jason.encode!(%{error: details}, pretty: true))
+        send_bad_request(conn, details)
     end
   end
 
@@ -49,12 +46,10 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
 
     case Storage.get_stats(:compacted_reading, sensors) do
       {:ok, stats} ->
-        send_resp(conn, 200, Jason.encode!(stats, pretty: true))
+        send_json(conn, stats)
 
       {:error, :database_error, details} ->
-        Logger.error(details)
-
-        send_resp(conn, 500, Jason.encode!(%{error: "Database error"}))
+        send_internal_server_error(conn, details)
     end
   end
 end

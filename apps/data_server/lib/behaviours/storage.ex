@@ -1,4 +1,6 @@
 defmodule DataServer.Behaviours.Storage do
+  @moduledoc false
+
   @type document :: map()
   @type document_type :: atom()
   @type filter :: map()
@@ -13,6 +15,9 @@ defmodule DataServer.Behaviours.Storage do
               | {:error, reason, details}
 
   @callback find(document_type, filter) ::
+              {:ok, [document()], total()}
+              | {:error, reason, details}
+  @callback find(document_type, filter, keyword()) ::
               {:ok, [document()], total()}
               | {:error, reason, details}
 

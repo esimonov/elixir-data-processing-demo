@@ -1,4 +1,15 @@
 defmodule FacilityCollector do
+  @moduledoc """
+  A GenServer implementation for collecting and compacting sensor readings for a specific facility.
+
+  `FacilityCollector` manages the aggregation of sensor data (e.g., humidity, temperature, pressure)
+  for a single facility. It periodically compacts these readings into a document and publishes it
+  to message broker for further processing.
+
+  ## Configuration
+
+  - `:compaction_interval`: Time interval for compacting sensor readings. Set in the application environment for `:data_collector`.
+  """
   require Logger
   use GenServer
 

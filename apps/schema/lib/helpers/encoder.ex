@@ -1,4 +1,8 @@
 defmodule Schema.Helpers.Encoder do
+  @moduledoc """
+  Provides utility functions for encoding Elixir maps into Protobuf structs.
+  """
+
   def encode_map(:compacted_reading, %{} = map) do
     struct(
       Schema.CompactedReading,

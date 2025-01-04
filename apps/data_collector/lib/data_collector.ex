@@ -1,4 +1,8 @@
 defmodule DataCollector do
+  @moduledoc """
+  The `DataCollector` module is a GenServer responsible for subscribing to sensor reading topics,
+  processing incoming messages, and routing validated sensor readings to appropriate facility collectors.
+  """
   use GenServer
 
   require Logger
@@ -71,6 +75,7 @@ defmodule DataCollector do
   defp validate_sensor_reading(json_string) do
     case Jason.decode(json_string) do
       {:ok, %{"ts" => ts, "val" => value}} -> {:ok, %{ts: ts, val: value}}
+      {:ok, _} -> {:error, "Invalid payload structure: #{json_string}"}
       {:error, error} -> {:error, Jason.DecodeError.message(error)}
     end
   end

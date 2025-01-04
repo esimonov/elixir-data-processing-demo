@@ -1,4 +1,12 @@
 defmodule FacilitySupervisor do
+  @moduledoc """
+  Supervises `FacilityCollector` processes for each facility.
+
+  `FacilitySupervisor` is responsible for managing the lifecycle of `FacilityCollector` processes,
+  where each `FacilityCollector` handles sensor readings for a specific facility.
+
+  This supervisor is implemented as a `DynamicSupervisor` to allow runtime creation of child processes.
+  """
   use DynamicSupervisor
 
   def start_link(_) do

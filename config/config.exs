@@ -74,3 +74,5 @@ config :data_server, DataServer.Storage.Mongo.Repo,
   auth_source: "admin"
 
 Logger.put_module_level(:emqtt, :error)
+
+import_config "config_#{config_env()}.exs"
