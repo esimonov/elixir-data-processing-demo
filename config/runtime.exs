@@ -1,9 +1,13 @@
 import Config
 
+kafka_brokers = [{"localhost", 9092}]
+
+kafka_credentials = {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
+
 config :data_collector, :kafka_producer,
-  brokers: [{"localhost", 9092}],
+  brokers: kafka_brokers,
   topic: "compacted_sensor_readings",
-  sasl: {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
+  sasl: kafka_credentials
 
 config :data_server, :broadway,
   name: DataServer.Broadway,
@@ -11,12 +15,10 @@ config :data_server, :broadway,
     module:
       {BroadwayKafka.Producer,
        [
-         hosts: [{"localhost", 9092}],
+         hosts: kafka_brokers,
          group_id: "data_server_group",
          topics: ["compacted_sensor_readings"],
-         client_config: [
-           sasl: {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
-         ]
+         client_config: [sasl: kafka_credentials]
        ]},
     concurrency: 1
   ],
