@@ -1,7 +1,7 @@
-defmodule DataServer.Consumer.ProtobufTest do
+defmodule Schema.Helpers.ProtobufTest do
   use ExUnit.Case, async: true
 
-  alias DataServer.Consumer.Protobuf
+  alias Schema.Helpers.Protobuf
 
   describe "decode_map/1" do
     test "decodes Schema.CompactedReading" do

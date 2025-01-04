@@ -12,7 +12,7 @@ defmodule DataServer.Consumer do
 
   alias DataServer.Storage
 
-  alias DataServer.Consumer.Protobuf
+  alias Schema.Helpers.Protobuf
 
   def start_link(_) do
     Broadway.start_link(__MODULE__, Application.get_env(:data_server, :broadway, %{}))
