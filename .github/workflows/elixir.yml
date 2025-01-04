@@ -30,25 +30,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache deps
-        uses: actions/cache@v4
-        env:
-          cache-name: deps-cache
-        with:
-          path: deps
-          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-${{ env.cache-name }}-
-
-      - name: Cache build
-        uses: actions/cache@v4
-        env:
-          cache-name: compiled-build-cache
-        with:
-          path: _build
-          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-${{ env.cache-name }}-
-            ${{ runner.os }}-mix-
+      - name: Source local .env file
+        run: source .env.local
 
       - name: Install deps
         run: mix deps.get
