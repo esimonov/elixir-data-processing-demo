@@ -39,16 +39,6 @@ jobs:
           key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{hashFiles('**/mix.lock') }}
           restore-keys: ${{ runner.os }}-mix-${{ env.cache-name }}-
 
-      - name: Cache build
-        uses: actions/cache@v4
-        env:
-          cache-name: compiled-build-cache
-        with:
-          path: _build
-          key: ${{ runner.os }}-mix-${{ env.cache-name }}-${{hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-${{ env.cache-name }}-
-            ${{ runner.os }}-mix-
 
       - name: Install deps
         run: mix deps.get
