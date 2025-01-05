@@ -25,6 +25,8 @@ config :data_compactor, :emqtt,
 config :data_compactor,
   compaction_interval: Duration.new!(second: 10)
 
+config :data_compactor, producer: DataCompactor.Producer.Kafka
+
 config :data_generator, :emqtt,
   host: "127.0.0.1",
   port: 1883,

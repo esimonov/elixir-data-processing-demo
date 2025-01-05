@@ -13,6 +13,8 @@ defmodule FacilityCompactor do
   require Logger
   use GenServer
 
+  alias DataCompactor.Producer
+
   @aggregations [
     "avg",
     "min",
@@ -43,7 +45,7 @@ defmodule FacilityCompactor do
 
   def handle_info(:compact_readings, %{facility_id: facility_id} = state) do
     with doc <- compact_readings(state),
-         :ok <- DataCompactor.KafkaProducer.produce(doc) do
+         :ok <- Producer.produce(doc) do
     else
       {:error, reason} ->
         Logger.error("Producing compacted reading: #{inspect(reason)}")

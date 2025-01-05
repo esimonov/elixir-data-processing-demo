@@ -1,4 +1,4 @@
-defmodule DataCompactor.KafkaProducer do
+defmodule DataCompactor.Producer.Kafka do
   @moduledoc """
   Module responsible for producing messages to Kafka.
   """
@@ -8,6 +8,8 @@ defmodule DataCompactor.KafkaProducer do
   alias Schema.Helpers.Encoder
 
   @table :kafka_config
+
+  @behaviour DataCompactor.Behaviours.Producer
 
   def start_link(_opts) do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -42,6 +44,6 @@ defmodule DataCompactor.KafkaProducer do
         Encoder.encode_map(:compacted_reading, doc)
       )
   rescue
-    e -> {:error, e}
+    e -> {:error, inspect(e)}
   end
 end
