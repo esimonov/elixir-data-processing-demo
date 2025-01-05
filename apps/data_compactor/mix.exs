@@ -1,9 +1,9 @@
-defmodule DataCollector.MixProject do
+defmodule DataCompactor.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :data_collector,
+      app: :data_compactor,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -19,7 +19,7 @@ defmodule DataCollector.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {DataCollector.Application, []}
+      mod: {DataCompactor.Application, []}
     ]
   end
 

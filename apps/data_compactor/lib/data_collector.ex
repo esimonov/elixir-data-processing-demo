@@ -1,7 +1,7 @@
-defmodule DataCollector do
+defmodule DataCompactor do
   @moduledoc """
-  The `DataCollector` module is a GenServer responsible for subscribing to sensor reading topics,
-  processing incoming messages, and routing validated sensor readings to appropriate facility collectors.
+  The `DataCompactor` module is a GenServer responsible for subscribing to sensor reading topics,
+  processing (compacting) incoming messages, and routing validated sensor readings to appropriate facility compactors.
   """
   use GenServer
 
@@ -18,7 +18,7 @@ defmodule DataCollector do
   def start_link(_args), do: GenServer.start_link(__MODULE__, [])
 
   def init(_args) do
-    {:ok, pid} = Application.get_env(:data_collector, :emqtt) |> :emqtt.start_link()
+    {:ok, pid} = Application.get_env(:data_compactor, :emqtt) |> :emqtt.start_link()
 
     {:ok, %{pid: pid}, {:continue, :start_emqtt}}
   end
@@ -33,7 +33,7 @@ defmodule DataCollector do
       end
     )
 
-    Logger.info("Collector subscribed")
+    Logger.info("Compactor subscribed")
 
     {:noreply, state}
   end

@@ -4,7 +4,7 @@ kafka_brokers = [{"localhost", 9092}]
 
 kafka_credentials = {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
 
-config :data_collector, :kafka_producer,
+config :data_compactor, :kafka_producer,
   brokers: kafka_brokers,
   topic: "compacted_sensor_readings",
   sasl: kafka_credentials

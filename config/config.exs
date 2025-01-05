@@ -17,12 +17,12 @@ import Config
 #       metadata: [:user_id]
 #
 
-config :data_collector, :emqtt,
+config :data_compactor, :emqtt,
   host: "127.0.0.1",
-  clientid: "collector",
+  clientid: "compactor",
   port: 1883
 
-config :data_collector,
+config :data_compactor,
   compaction_interval: Duration.new!(second: 10)
 
 config :data_generator, :emqtt,

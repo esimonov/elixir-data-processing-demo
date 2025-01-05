@@ -7,7 +7,7 @@ contexts:
       - name: Compacted Reading
         definition: An aggregated representation of multiple sensor readings in some facility over a certain period of time.
         examples:
-          - Compacted sensor readings are produced once in 10 seconds for each facility, but window size is easily configurable.
+          - Sensor readings are compacted once in 10 seconds for each facility, but window size is easily configurable.
 
       - name: Facility
         definition: Simulated physical location of sensors.

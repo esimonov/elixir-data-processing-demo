@@ -1,4 +1,4 @@
-defmodule DataCollector.KafkaProducer do
+defmodule DataCompactor.KafkaProducer do
   @moduledoc """
   Module responsible for producing messages to Kafka.
   """
@@ -14,7 +14,7 @@ defmodule DataCollector.KafkaProducer do
   end
 
   def init(_) do
-    config = Application.fetch_env!(:data_collector, :kafka_producer)
+    config = Application.fetch_env!(:data_compactor, :kafka_producer)
 
     :ets.new(@table, [:named_table, :protected, read_concurrency: true])
     :ets.insert(@table, {:config, config})

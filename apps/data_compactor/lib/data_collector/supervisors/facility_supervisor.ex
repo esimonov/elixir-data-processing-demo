@@ -1,9 +1,9 @@
 defmodule FacilitySupervisor do
   @moduledoc """
-  Supervises `FacilityCollector` processes for each facility.
+  Supervises `FacilityCompactor` processes for each facility.
 
-  `FacilitySupervisor` is responsible for managing the lifecycle of `FacilityCollector` processes,
-  where each `FacilityCollector` handles sensor readings for a specific facility.
+  `FacilitySupervisor` is responsible for managing the lifecycle of `FacilityCompactor` processes,
+  where each `FacilityCompactor` handles sensor readings for a specific facility.
 
   This supervisor is implemented as a `DynamicSupervisor` to allow runtime creation of child processes.
   """
@@ -14,7 +14,7 @@ defmodule FacilitySupervisor do
   end
 
   def start_child(facility_id) do
-    DynamicSupervisor.start_child(__MODULE__, {FacilityCollector, facility_id})
+    DynamicSupervisor.start_child(__MODULE__, {FacilityCompactor, facility_id})
   end
 
   def init(:ok), do: DynamicSupervisor.init(strategy: :one_for_one)

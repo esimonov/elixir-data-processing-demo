@@ -1,14 +1,14 @@
-defmodule FacilityCollector do
+defmodule FacilityCompactor do
   @moduledoc """
   A GenServer implementation for collecting and compacting sensor readings for a specific facility.
 
-  `FacilityCollector` manages the aggregation of sensor data (e.g., humidity, temperature, pressure)
+  `FacilityCompactor` manages the aggregation of sensor data (e.g., humidity, temperature, pressure)
   for a single facility. It periodically compacts these readings into a document and publishes it
   to message broker for further processing.
 
   ## Configuration
 
-  - `:compaction_interval`: Time interval for compacting sensor readings. Set in the application environment for `:data_collector`.
+  - `:compaction_interval`: Time interval for compacting sensor readings. Set in the application environment for `:data_compactor`.
   """
   require Logger
   use GenServer
@@ -19,7 +19,7 @@ defmodule FacilityCollector do
     "max"
   ]
 
-  @compaction_interval Application.compile_env!(:data_collector, :compaction_interval)
+  @compaction_interval Application.compile_env!(:data_compactor, :compaction_interval)
 
   def start_link(facility_id) do
     GenServer.start_link(
@@ -43,7 +43,7 @@ defmodule FacilityCollector do
 
   def handle_info(:compact_readings, %{facility_id: facility_id} = state) do
     with doc <- compact_readings(state),
-         :ok <- DataCollector.KafkaProducer.produce(doc) do
+         :ok <- DataCompactor.KafkaProducer.produce(doc) do
     else
       {:error, reason} ->
         Logger.error("Producing compacted reading: #{inspect(reason)}")
