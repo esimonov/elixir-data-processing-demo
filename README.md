@@ -70,7 +70,7 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
     - [x] [brod](https://github.com/kafka4beam/brod), Kafka client
     - [x] [ets](https://www.erlang.org/docs/23/man/ets), term storage
 
-- Various:
+- Misc:
 
   - [x] [Contextive](https://github.com/dev-cycles/contextive) for Ubiquitous Language
   - [ ] Structured logging (JSON)
@@ -85,6 +85,10 @@ docker compose -f docker/docker-compose.yml up -d
 
 # Export secrets for Kafka and Mongo.
 export $(cat .env.local | xargs) && iex -S mix
+
+# Install dependencies.
+
+mix deps.get
 
 # Start the apps.
 iex -S mix
