@@ -15,6 +15,8 @@ defmodule DataServer.Consumer do
   alias Schema.Helpers.Decoder
 
   def start_link(_) do
+    Logger.info("Starting Data Server's Consumer")
+
     Broadway.start_link(__MODULE__, Application.get_env(:data_server, :broadway, %{}))
   end
 

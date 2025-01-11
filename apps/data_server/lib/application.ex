@@ -11,7 +11,7 @@ defmodule DataServer.Application do
   def start(_type, _args) do
     children = [
       {Mongo, Repo.config()},
-      DataServer.Consumer,
+      DataServer.Consumer.Supervisor,
       {
         Plug.Cowboy,
         scheme: :http,
