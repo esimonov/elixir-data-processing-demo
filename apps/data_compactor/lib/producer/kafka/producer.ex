@@ -7,11 +7,15 @@ defmodule DataCompactor.Producer.Kafka do
 
   alias Schema.Helpers.Encoder
 
+  require Logger
+
   @table :kafka_config
 
   @behaviour DataCompactor.Behaviours.Producer
 
   def start_link(_opts) do
+    Logger.info("Starting Data Compactor's Kafka Producer")
+
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -29,10 +33,10 @@ defmodule DataCompactor.Producer.Kafka do
         sasl: Keyword.get(config, :sasl)
       )
 
-    Supervisor.init([], strategy: :one_for_one)
+    Supervisor.init([], strategy: :one_for_one, max_restarts: 10, max_seconds: 60)
   end
 
-  def produce(%{facility_id: facility_id} = doc) do
+  def produce(%{facility_name: facility_name} = doc) do
     [{:config, config}] = :ets.lookup(@table, :config)
 
     :ok =
@@ -40,7 +44,7 @@ defmodule DataCompactor.Producer.Kafka do
         :brod_client,
         Keyword.fetch!(config, :topic),
         :hash,
-        facility_id,
+        facility_name,
         Encoder.encode_map(:compacted_reading, doc)
       )
   rescue

@@ -15,7 +15,7 @@ defmodule DataServer.HTTPAPI.Router do
 
   plug(:dispatch)
 
-  get("/api/sensors/:facility_id", do: conn |> Sensor.find())
+  get("/api/sensors/:facility_name", do: conn |> Sensor.find())
 
   get("/api/stats", do: conn |> Sensor.get_stats())
 

@@ -15,7 +15,11 @@ defmodule DataCompactor do
 
   @topics_prefix "sensor_readings"
 
-  def start_link(_args), do: GenServer.start_link(__MODULE__, [])
+  def start_link(_args) do
+    Logger.info("Starting Data Compactor")
+
+    GenServer.start_link(__MODULE__, [])
+  end
 
   def init(_args) do
     {:ok, pid} = Application.get_env(:data_compactor, :emqtt) |> :emqtt.start_link()
@@ -43,13 +47,13 @@ defmodule DataCompactor do
   end
 
   defp handle_publish(
-         [@topics_prefix, facility_id, sensor_name],
+         [@topics_prefix, facility_name, sensor_name],
          %{payload: payload},
          state
        ) do
     case validate_sensor_reading(payload) do
       {:ok, %{ts: ts, val: value}} ->
-        route_message(facility_id, sensor_name, %{ts: ts, val: value})
+        route_message(facility_name, sensor_name, %{ts: ts, val: value})
 
       {:error, reason} ->
         Logger.error("Validating sensor reading: #{reason}")
@@ -58,14 +62,14 @@ defmodule DataCompactor do
     {:noreply, state}
   end
 
-  defp route_message(facility_id, sensor_name, %{ts: ts, val: value}) do
+  defp route_message(facility_name, sensor_name, %{ts: ts, val: value}) do
     pid =
-      case Registry.lookup(Registry.Facilities, facility_id) do
+      case Registry.lookup(Registry.Facilities, facility_name) do
         [{pid, _}] ->
           pid
 
         [] ->
-          {:ok, pid} = FacilitySupervisor.start_child(facility_id)
+          {:ok, pid} = FacilitySupervisor.start_child(facility_name)
           pid
       end
 

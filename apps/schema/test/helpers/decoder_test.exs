@@ -7,7 +7,7 @@ defmodule Schema.Helpers.DecoderTest do
     test "decodes Schema.CompactedReading" do
       result =
         %Schema.CompactedReading{
-          facility_id: "test_id",
+          facility_name: "test_id",
           avg_humidity: 1.0,
           avg_temperature: 2.0,
           avg_pressure: 3.0,
@@ -28,7 +28,7 @@ defmodule Schema.Helpers.DecoderTest do
                {
                  :ok,
                  %{
-                   facility_id: "test_id",
+                   facility_name: "test_id",
                    avg_humidity: 1.0,
                    avg_temperature: 2.0,
                    avg_pressure: 3.0,

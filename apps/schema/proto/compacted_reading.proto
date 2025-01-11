@@ -8,7 +8,7 @@ package schema;
 // interval.
 message CompactedReading {
   reserved 3;
-  string facility_id = 1;
+  string facility_name = 1;
   Interval window = 2;
   double avg_humidity = 4;
   double avg_temperature = 5;

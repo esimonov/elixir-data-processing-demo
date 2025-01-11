@@ -3,7 +3,7 @@ defmodule Schema.CompactedReading do
 
   use Protobuf, syntax: :proto3, protoc_gen_elixir_version: "0.13.0"
 
-  field(:facility_id, 1, type: :string, json_name: "facilityId")
+  field(:facility_name, 1, type: :string, json_name: "facilityName")
   field(:window, 2, type: Schema.Interval)
   field(:avg_humidity, 4, type: :double, json_name: "avgHumidity")
   field(:avg_temperature, 5, type: :double, json_name: "avgTemperature")

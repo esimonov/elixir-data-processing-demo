@@ -14,7 +14,7 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
     with {:ok, limit} <- Pagination.validate_limit(conn.params["limit"]),
          {:ok, offset} <- Pagination.validate_offset(conn.params["offset"]) do
       opts = [limit: limit, offset: offset, sort: [start_time: -1]]
-      filter = %{facility_id: conn.params["facility_id"]}
+      filter = %{facility_name: conn.params["facility_name"]}
 
       case(Storage.find(:compacted_reading, filter, opts)) do
         {:ok, readings, total} ->

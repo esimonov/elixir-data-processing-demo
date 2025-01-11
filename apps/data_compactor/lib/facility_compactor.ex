@@ -23,18 +23,20 @@ defmodule FacilityCompactor do
 
   @compaction_interval Application.compile_env!(:data_compactor, :compaction_interval)
 
-  def start_link(facility_id) do
+  def start_link(facility_name) do
+    Logger.info("Starting Compactor for #{facility_name}")
+
     GenServer.start_link(
       __MODULE__,
-      %{facility_id: facility_id},
-      name: via(facility_id)
+      %{facility_name: facility_name},
+      name: via(facility_name)
     )
   end
 
-  defp via(facility_id), do: {:via, Registry, {Registry.Facilities, facility_id}}
+  defp via(facility_name), do: {:via, Registry, {Registry.Facilities, facility_name}}
 
-  def init(%{facility_id: facility_id}) do
-    {:ok, reset_state(facility_id)}
+  def init(%{facility_name: facility_name}) do
+    {:ok, reset_state(facility_name)}
   end
 
   def handle_cast({sensor_name, %{val: value}}, state) do
@@ -43,7 +45,7 @@ defmodule FacilityCompactor do
     {:noreply, updated_state}
   end
 
-  def handle_info(:compact_readings, %{facility_id: facility_id} = state) do
+  def handle_info(:compact_readings, %{facility_name: facility_name} = state) do
     with doc <- compact_readings(state),
          :ok <- Producer.produce(doc) do
     else
@@ -51,12 +53,12 @@ defmodule FacilityCompactor do
         Logger.error("Producing compacted reading: #{inspect(reason)}")
     end
 
-    {:noreply, reset_state(facility_id)}
+    {:noreply, reset_state(facility_name)}
   end
 
-  defp update_readings_state(%{facility_id: facility_id} = state, sensor_name, value) do
+  defp update_readings_state(%{facility_name: facility_name} = state, sensor_name, value) do
     Logger.debug(
-      "Updating readings state: #{sensor_name}, facility: #{facility_id}, value: #{value}"
+      "Updating readings state: #{sensor_name}, facility: #{facility_name}, value: #{value}"
     )
 
     sensor_state =
@@ -94,15 +96,15 @@ defmodule FacilityCompactor do
       )
     end)
     |> Enum.into(%{
-      facility_id: state.facility_id,
+      facility_name: state.facility_name,
       window_start: state.window_start,
       window_end: DateTime.utc_now()
     })
   end
 
-  defp reset_state(facility_id) do
+  defp reset_state(facility_name) do
     %{
-      facility_id: facility_id,
+      facility_name: facility_name,
       readings: %{},
       window_start: DateTime.utc_now(),
       timer: Process.send_after(self(), :compact_readings, to_timeout(@compaction_interval))

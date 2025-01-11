@@ -23,7 +23,7 @@ defmodule DataServer.Storage.Mongo.CompactedReading do
   collection @coll_name do
     # The `dump` function will remove the attribute automatically before saving to the database.
     attribute(:id, String.t(), derived: true)
-    attribute(:facility_id, String.t())
+    attribute(:facility_name, String.t())
     attribute(:avg_humidity, float())
     attribute(:avg_temperature, float())
     attribute(:avg_pressure, float())

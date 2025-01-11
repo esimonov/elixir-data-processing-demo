@@ -13,7 +13,7 @@ defmodule DataServer.HTTPAPI.Handlers.SensorTest do
       # Define the mocked response
       readings = [
         %{
-          "facility_id" => "facility_123",
+          "facility_name" => "facility_123",
           "start_time" => "2024-12-29T12:00:00Z",
           "end_time" => "2024-12-29T12:05:00Z",
           "avg_temperature" => 22.5,
@@ -21,7 +21,7 @@ defmodule DataServer.HTTPAPI.Handlers.SensorTest do
           "min_temperature" => 20.0
         },
         %{
-          "facility_id" => "facility_123",
+          "facility_name" => "facility_123",
           "start_time" => "2024-12-29T12:05:00Z",
           "end_time" => "2024-12-29T12:10:00Z",
           "avg_temperature" => 23.0,

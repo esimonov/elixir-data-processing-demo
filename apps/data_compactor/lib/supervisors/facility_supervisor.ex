@@ -13,8 +13,8 @@ defmodule FacilitySupervisor do
     DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def start_child(facility_id) do
-    DynamicSupervisor.start_child(__MODULE__, {FacilityCompactor, facility_id})
+  def start_child(facility_name) do
+    DynamicSupervisor.start_child(__MODULE__, {FacilityCompactor, facility_name})
   end
 
   def init(:ok), do: DynamicSupervisor.init(strategy: :one_for_one)

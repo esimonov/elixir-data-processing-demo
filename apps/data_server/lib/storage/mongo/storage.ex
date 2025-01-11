@@ -75,7 +75,7 @@ defmodule DataServer.Storage.Mongo do
     group =
       Enum.reduce(
         field_names,
-        [_id: "$facility_id"],
+        [_id: "$facility_name"],
         fn name, acc ->
           [{:"stdev_#{name}", %{"$stdDevSamp": "$avg_#{name}"}} | acc]
         end
