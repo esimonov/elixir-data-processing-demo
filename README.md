@@ -71,7 +71,7 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
     - [x] [ets](https://www.erlang.org/docs/23/man/ets), term storage
 
 - Misc:
-
+  - [x] Docker
   - [x] [Contextive](https://github.com/dev-cycles/contextive) for Ubiquitous Language
   - [ ] Structured logging (JSON)
 
@@ -80,8 +80,10 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
 Requires Elixir 1.17+ and Docker Compose for running Kafka, MongoDB, and Mosquitto (MQTT broker).
 
 ```sh
-# Start dependencies.
+# Start Kafka, MongoDB, MQTT.
 docker compose -f docker/docker-compose.yml up -d
+
+docker build --no-cache --tag data-processing-pipeline -f docker/Dockerfile . --progress=plain
 
 # Export secrets for Kafka and Mongo.
 export $(cat .env.local | xargs) && iex -S mix
@@ -95,3 +97,17 @@ iex -S mix
 ```
 
 Now you can navigate to `http://localhost:8080/api/sensors/` to verify it's up and running.
+
+## Running in Docker
+
+If you don't have Elixir installed, the demo can be run in a Docker container.
+
+```sh
+# Build the image: the release (build artefact) will include all the three applications.
+docker build --no-cache --tag data-processing-pipeline -f docker/Dockerfile . --progress=plain
+
+# Start the app along with Kafka, MongoDB, MQTT.
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml up
+```
+
+Kafka container takes some time to stabilize, so encountering `errconnrefused` errors shortly after startup is normal.

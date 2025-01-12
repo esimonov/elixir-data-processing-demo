@@ -1,8 +1,29 @@
 import Config
 
-kafka_brokers = [{"localhost", 9092}]
+require Logger
 
-kafka_credentials = {:plain, System.get_env("KAFKA_USER"), System.get_env("KAFKA_PASSWORD")}
+config :data_generator, :emqtt,
+  host: System.get_env("MQTT_HOST"),
+  port: System.get_env("MQTT_PORT") |> String.to_integer(),
+  clientid: "generator"
+
+config :data_compactor, :emqtt,
+  host: System.get_env("MQTT_HOST"),
+  port: System.get_env("MQTT_PORT") |> String.to_integer(),
+  clientid: "compactor"
+
+kafka_brokers = [
+  {
+    System.get_env("KAFKA_HOST"),
+    System.get_env("KAFKA_PORT") |> String.to_integer()
+  }
+]
+
+kafka_credentials = {
+  :plain,
+  System.get_env("KAFKA_USER"),
+  System.get_env("KAFKA_PASSWORD")
+}
 
 config :data_compactor, :kafka_producer,
   brokers: kafka_brokers,
@@ -27,10 +48,13 @@ config :data_server, :broadway,
   ]
 
 config :data_server, DataServer.Storage.Mongo.Repo,
-  url: "mongodb://localhost:27017/elixir-data-processing-demo",
+  url:
+    "mongodb://#{System.get_env("MONGO_HOST")}:#{System.get_env("MONGO_PORT")}/elixir-data-processing-demo",
   timeout: 60_000,
   idle_interval: 10_000,
   queue_target: 5_000,
   username: System.get_env("MONGO_USER"),
   password: System.get_env("MONGO_PASSWORD"),
   auth_source: "admin"
+
+Logger.put_module_level(:emqtt, :error)
