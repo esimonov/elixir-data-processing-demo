@@ -25,7 +25,7 @@ defmodule DataCompactor.Producer.Kafka do
     :ets.new(@table, [:named_table, :protected, read_concurrency: true])
     :ets.insert(@table, {:config, config})
 
-    :ok =
+    res =
       :brod.start_client(
         Keyword.fetch!(config, :brokers),
         :brod_client,
@@ -33,7 +33,15 @@ defmodule DataCompactor.Producer.Kafka do
         sasl: Keyword.get(config, :sasl)
       )
 
-    Supervisor.init([], strategy: :one_for_one, max_restarts: 10, max_seconds: 60)
+    case res do
+      :ok ->
+        Logger.info("Data Compactor's Kafka Producer started")
+
+        Supervisor.init([], strategy: :one_for_one, max_restarts: 10, max_seconds: 60)
+
+      {:error, reason} ->
+        Logger.info("Could not start Data Compactor's Kafka Producer: #{inspect(reason)}")
+    end
   end
 
   def produce(%{facility_name: facility_name} = doc) do

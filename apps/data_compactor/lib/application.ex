@@ -10,7 +10,7 @@ defmodule DataCompactor.Application do
     children = [
       {Registry, keys: :unique, name: Registry.Facilities},
       FacilitySupervisor,
-      DataCompactor.Producer.Kafka,
+      DataCompactor.Producer.Kafka.Supervisor,
       DataCompactor
     ]
 
