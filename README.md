@@ -15,19 +15,19 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
 
 - Messaging
 
-  - Kafka
+  - [x] Kafka
 
     - [x] Producer
     - [x] Consumer
 
-  - MQTT
+  - [x] MQTT
 
     - [x] Publisher
     - [x] Subscriber
 
 - Storage
 
-  - MongoDB
+  - [x] MongoDB
 
     - [x] Find
     - [x] Insert
@@ -35,12 +35,12 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
 
 - Data formats
 
-  - JSON:
+  - [x] JSON:
 
     - [x] Decoding
     - [x] Encoding
 
-  - Protobuf:
+  - [x] Protobuf:
 
     - [x] Decoding
     - [x] Encoding
@@ -49,8 +49,9 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
 
   - [x] Server
 
-    - Authentication
-      - [ ] JWT
+  - [ ] Authentication
+
+    - [ ] JWT
 
   - [ ] Client
 
@@ -58,6 +59,7 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
 
   - [x] Linting
   - [x] Testing
+    - [x] Test coverage with [ExCoveralls](https://github.com/parroty/excoveralls)
 
 - Elixir-specific
 
@@ -65,7 +67,7 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
   - [x] [DynamicSupervisor](https://hexdocs.pm/elixir/DynamicSupervisor.html) for [GenServers](https://hexdocs.pm/elixir/GenServer.html)
   - [x] [Broadway](https://github.com/dashbitco/broadway) for data ingestion abstraction
   - [x] Custom Storage and Producer behaviours as an abstraction layer
-  - Interoperability with Erlang
+  - [x] Interoperability with Erlang
     - [x] [emqtt](https://github.com/emqx/emqtt), MQTT client
     - [x] [brod](https://github.com/kafka4beam/brod), Kafka client
     - [x] [ets](https://www.erlang.org/docs/23/man/ets), term storage
@@ -86,8 +88,8 @@ docker compose -f docker/docker-compose.yml up -d
 # Export secrets for Kafka and Mongo.
 export $(cat .env.local | xargs) && iex -S mix
 
-# Install dependencies.
-mix deps.get
+# Install and compile dependencies.
+mix deps.get && mix deps.compile
 
 # Start the apps.
 iex -S mix

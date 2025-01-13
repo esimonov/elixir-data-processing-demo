@@ -12,7 +12,8 @@ defmodule DataServer.MixProject do
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
@@ -30,6 +31,7 @@ defmodule DataServer.MixProject do
       {:broadway, "~> 1.1"},
       {:broadway_kafka, "~> 0.4"},
       {:cowlib, "2.12.1", override: true},
+      {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"},
       {:mox, "~> 1.0", only: :test},
       {:mongodb_driver, "~> 1.5.0"},

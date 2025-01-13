@@ -9,7 +9,8 @@ defmodule Schema.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.17",
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
@@ -21,8 +22,9 @@ defmodule Schema.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:protobuf, "~> 0.13"},
-      {:google_protos, "~> 0.4"}
+      {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
+      {:google_protos, "~> 0.4"},
+      {:protobuf, "~> 0.13"}
     ]
   end
 end

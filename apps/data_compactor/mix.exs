@@ -11,7 +11,8 @@ defmodule DataCompactor.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
@@ -28,6 +29,7 @@ defmodule DataCompactor.MixProject do
     [
       {:brod, "~> 4.3"},
       {:emqtt, github: "emqx/emqtt", tag: "1.13.2", system_env: [{"BUILD_WITHOUT_QUIC", "1"}]},
+      {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"},
       {:schema, in_umbrella: true}
     ]

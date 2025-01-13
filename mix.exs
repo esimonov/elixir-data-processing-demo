@@ -15,7 +15,8 @@ defmodule Pipeline.MixProject do
             data_server: :permanent
           ]
         ]
-      ]
+      ],
+      test_coverage: [tool: ExCoveralls]
     ]
   end
 
