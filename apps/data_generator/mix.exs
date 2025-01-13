@@ -11,8 +11,7 @@ defmodule DataGenerator.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
-      deps: deps(),
-      test_coverage: [tool: ExCoveralls]
+      deps: deps()
     ]
   end
 
@@ -28,7 +27,6 @@ defmodule DataGenerator.MixProject do
   defp deps do
     [
       {:emqtt, github: "emqx/emqtt", tag: "1.13.2", system_env: [{"BUILD_WITHOUT_QUIC", "1"}]},
-      {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
       {:jason, "~> 1.4"}
     ]
   end
