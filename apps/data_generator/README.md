@@ -1,21 +1,16 @@
-# DataGenerator
+# Data Generator
 
-**TODO: Add description**
+The starting point of the data processing pipeline, and arguably the simplest app under umbrella: it only consists of a single GenServer that simulates sensor readings and publishes them over MQTT. It's comprised of a single module with no additional layers of abstraction.
 
-## Installation
+## Data description and format
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `data_generator` to your list of dependencies in `mix.exs`:
+The reported sensors are pre-defined. They are: humidity, pressure, and temperature.
 
-```elixir
-def deps do
-  [
-    {:data_generator, "~> 0.1.0"}
-  ]
-end
-```
+The readings are normally distributed random values with μs hardcoded as module attributes, and σ²s directly proportional to the ordinal number of the facility, e.g the higher the number of the facility, the more variance its sensor readings show. This is done in order to make the outputs in [Data Server](/apps/data_server/) more visually distinct.
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/data_generator>.
+## Configuration
 
+The following parameters are configurable:
+
+- `:num_facilities` - The total number of facilities to simulate.
+- `:reporting_interval` - Time interval between sensor reading simulations.

@@ -75,7 +75,7 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
   - [x] [Contextive](https://github.com/dev-cycles/contextive) for Ubiquitous Language
   - [ ] Structured logging (JSON)
 
-# Running locally
+## Running locally
 
 Requires Elixir 1.17+ and Docker Compose for running Kafka, MongoDB, and Mosquitto (MQTT broker).
 
@@ -83,13 +83,10 @@ Requires Elixir 1.17+ and Docker Compose for running Kafka, MongoDB, and Mosquit
 # Start Kafka, MongoDB, MQTT.
 docker compose -f docker/docker-compose.yml up -d
 
-docker build --no-cache --tag data-processing-pipeline -f docker/Dockerfile . --progress=plain
-
 # Export secrets for Kafka and Mongo.
 export $(cat .env.local | xargs) && iex -S mix
 
 # Install dependencies.
-
 mix deps.get
 
 # Start the apps.
