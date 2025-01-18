@@ -2,6 +2,10 @@
 
 The ending point of the data processing pipeline: this app subscribes to the data published by [Data Compactor](/apps/data_compactor/), saves is to MongoDB, and serves via HTTP.
 
+Storage is a custom Behaviour, so implementations other than MongoDB are easiliy pluggable.
+
+Kafka Consumer is implemented as a [Broadway](https://github.com/dashbitco/broadway) Behaviour, allowing for alternative implementations other than Kafka.
+
 ## Endpoints
 
 The server serves two HTTP endpoints:
