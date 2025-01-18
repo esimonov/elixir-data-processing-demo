@@ -51,7 +51,7 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
       |> Enum.filter(&(&1 in @sensor_names))
       |> Enum.uniq()
 
-    if length(sensors) == 0,
+    if Enum.empty?(sensors),
       do: send_bad_request(conn, "At least one valid sensor name must be provided")
 
     case Storage.get_stats(:compacted_reading, sensors) do
