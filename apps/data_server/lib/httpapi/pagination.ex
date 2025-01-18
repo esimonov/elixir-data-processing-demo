@@ -10,13 +10,13 @@ defmodule DataServer.HTTPAPI.Pagination do
 
   The `Pagination` struct contains the following fields:
 
-  - `:limit` - The maximum number of items to return (default: `10`).
+  - `:limit` - The maximum number of items to return.
   - `:offset` - The starting index for items to return (default: `0`).
   - `:total` - The total number of items available.
   """
 
-  @default_limit 10
-  @max_limit 20
+  @default_limit Application.compile_env!(:data_server, :default_limit)
+  @max_limit Application.compile_env!(:data_server, :max_limit)
 
   @validation_error_template "Invalid %{param}: must be a non-negative integer; got '%{value}'"
 

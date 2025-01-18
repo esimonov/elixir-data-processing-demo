@@ -28,6 +28,10 @@ config :data_generator,
 
 config :data_server, http_server_port: 8080
 
+config :data_server, default_limit: 10
+
+config :data_server, max_limit: 20
+
 config :data_server, storage: DataServer.Storage.Mongo
 
 config :data_server, compacted_readings_coll_name: "compacted_sensor_readings"
