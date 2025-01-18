@@ -49,9 +49,8 @@ It’s primarily a learning project, aimed at exploring and gaining hands-on exp
 
   - [x] Server
 
-  - [ ] Authentication
-
-    - [ ] JWT
+    - [ ] Authentication
+      - [ ] JWT
 
   - [ ] Client
 
@@ -95,7 +94,7 @@ mix deps.get && mix deps.compile
 iex -S mix
 ```
 
-Now you can navigate to `http://localhost:8080/api/sensors/` to verify it's up and running.
+Now you can navigate to `http://localhost:8080/api/sensors/facility_1` to verify it's up and running.
 
 ## Running in Docker
 
