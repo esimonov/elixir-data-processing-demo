@@ -32,12 +32,12 @@ defmodule DataServer.HTTPAPI.JSON do
   def send_bad_request(conn, msg) when is_binary(msg) do
     Logger.error("Bad request: #{msg}")
 
-    send_resp(conn, 400, Jason.encode!(%{error: msg}))
+    send_resp(conn, 400, Jason.encode!(%{error: msg}, pretty: true))
   end
 
   def send_internal_server_error(conn, details) do
     Logger.error("Internal server error: #{inspect(details)}")
 
-    send_resp(conn, 500, Jason.encode!(%{error: "Internal server error"}))
+    send_resp(conn, 500, Jason.encode!(%{error: "Internal server error"}, pretty: true))
   end
 end
