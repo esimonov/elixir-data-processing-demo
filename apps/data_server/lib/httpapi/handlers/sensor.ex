@@ -10,6 +10,12 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
 
   alias DataServer.Storage
 
+  @sensor_names [
+    "humidity",
+    "pressure",
+    "temperature"
+  ]
+
   def find(conn) do
     with {:ok, limit} <- Pagination.validate_limit(conn.params["limit"]),
          {:ok, offset} <- Pagination.validate_offset(conn.params["offset"]) do
@@ -42,7 +48,11 @@ defmodule DataServer.HTTPAPI.Handlers.Sensor do
       conn.params
       |> Map.get("sensors", "")
       |> String.split(",", trim: true)
-      |> Enum.reject(&(&1 == ""))
+      |> Enum.filter(&(&1 in @sensor_names))
+      |> Enum.uniq()
+
+    if length(sensors) == 0,
+      do: send_bad_request(conn, "At least one valid sensor name must be provided")
 
     case Storage.get_stats(:compacted_reading, sensors) do
       {:ok, stats} ->
